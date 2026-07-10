@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ELOVE GAME — Lab Escape Demo</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <h1>ELOVE GAME</h1>
+      <p class="tagline">Lab Escape Demo · Planet Nars · Three.js 3D</p>
+    </header>
+
+    <main id="game-wrap">
+      <!-- Three.js canvas mounts here -->
+
+      <div id="title-screen" class="overlay-panel">
+        <div class="title-card">
+          <h2>ELOVE GAME</h2>
+          <p class="sub">Lab Escape Demo · Planet Nars</p>
+          <p class="hint">Press <kbd>Enter</kbd> or <kbd>J</kbd> / <kbd>Space</kbd> to start</p>
+          <p id="title-best" class="best"></p>
+        </div>
+      </div>
+
+      <div id="play-hud" class="hidden">
+        <div class="hud-top">
+          <span id="hud-time">TIME 0:00.00</span>
+          <span id="hud-best"></span>
+          <div id="hud-hp" class="hp"></div>
+        </div>
+        <div id="eye-timer" class="eye-timer hidden"></div>
+        <div id="toast" class="toast hidden"></div>
+        <div id="tutorial" class="tutorial hidden">Follow the glowing markers · press E near props</div>
+        <div class="hud-bottom">
+          <div class="inv">
+            <span id="inv-key">KEY:—</span>
+            <span id="inv-sword">SWORD:—</span>
+            <span id="inv-pad">PAD:OFF</span>
+            <span id="inv-door" class="danger">DOOR:LOCK</span>
+          </div>
+          <div class="obj-row">
+            <span class="obj-tag">OBJ</span>
+            <span id="objective">Wake up</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="console-overlay" class="overlay-panel hidden">
+        <div class="console-card">
+          <h3>NARS LAB UPLINK // CRYPTO</h3>
+          <p>THE EYE OPENS THE WAY.</p>
+          <p>THE BUTTON HIDES WHERE</p>
+          <p>LIGHT KISSES THE WALL.</p>
+          <p class="gold">(E to close · look SE of console)</p>
+        </div>
+      </div>
+
+      <div id="end-overlay" class="overlay-panel hidden">
+        <div class="end-card">
+          <h2 id="end-title">ESCAPED!</h2>
+          <p id="end-sub"></p>
+          <p id="end-best" class="best"></p>
+          <p class="hint">Press <kbd>R</kbd> to run again</p>
+          <p class="muted">Phase4 stubs: infection/god-sabotage/shift — not active</p>
+        </div>
+      </div>
+    </main>
+
+    <aside class="hud-help" aria-label="Controls">
+      <strong>Controls</strong>
+      <ul>
+        <li><kbd>WASD</kbd> / <kbd>Arrows</kbd> — Move</li>
+        <li><kbd>J</kbd> / <kbd>Space</kbd> — Slash</li>
+        <li><kbd>E</kbd> — Interact / Grab</li>
+        <li><kbd>F</kbd> — Cute-energy force-warp</li>
+        <li><kbd>R</kbd> — Restart run</li>
+        <li><kbd>M</kbd> — Mute SFX</li>
+      </ul>
+    </aside>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
