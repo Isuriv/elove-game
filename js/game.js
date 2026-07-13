@@ -1,4 +1,4 @@
-/* Core game state — lab escape vertical slice (Three.js) */
+/* Core game state — lab escape vertical slice (2D canvas) */
 import { CFG, TILE } from "./config.js";
 import { World } from "./world.js";
 import { Player, Cyborg } from "./entities.js";
@@ -76,8 +76,8 @@ export const Game = (() => {
     toastUntil = performance.now() + ms;
   }
 
-  function bind(scene3d, hudEls) {
-    scene = scene3d;
+  function bind(scene2d, hudEls) {
+    scene = scene2d;
     hud = hudEls;
   }
 
@@ -287,12 +287,14 @@ export const Game = (() => {
           player.state = "success";
           const record = saveBest(runTime);
           AudioFX.win();
+          if (scene) scene.playWinFlourish(player);
           showToast(record ? "NEW BEST ESCAPE!" : "Escaped to the rocket bay!", 4000);
         }
       }
 
       if (!player.alive) {
         mode = STATE.DEAD;
+        if (scene) scene.playDeathFlourish(player);
         showToast("Systems down… press R to retry.", 5000);
       }
     }
@@ -307,11 +309,13 @@ export const Game = (() => {
     }
     if (mode !== STATE.PLAY || !player.alive) return;
     if (!player.trySlash(now)) return;
+    if (scene) scene.playSlashVfx(player);
     const hb = player.slashHitbox();
     const dmgBonus = inventory.sword;
     for (const e of enemies) {
       if (!e.alive) continue;
       if (near(hb.x, hb.y, e.x, e.y, hb.r + (dmgBonus ? 4 : 0))) {
+        if (scene) scene.playHitSparks(e.x, e.y, e.dropsKey ? CFG.COLORS.cyan : CFG.COLORS.gold);
         const drop = e.takeHit(now, player.x);
         if (dmgBonus && e.alive) e.takeHit(now, player.x);
         if (drop && drop.type === "eye") {

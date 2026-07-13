@@ -1,7 +1,7 @@
-/* ELOVE GAME — shared config & palette (3D) */
+/* ELOVE GAME — shared config & palette (2D HD pixel) */
 export const CFG = {
   TILE: 16, // logical units (collision / gameplay coords)
-  UNIT: 1, // 1 tile = 1 world unit in Three.js
+  VIEW_SCALE: 3, // canvas pixels per logical unit — HD pixel look
   PLAYER_SPEED: 1.35,
   SLASH_RANGE: 22,
   SLASH_COOLDOWN: 280,
@@ -41,19 +41,14 @@ export const TILE = {
   EXIT: 8,
   DECOR: 9,
   HIDDEN_BTN: 10,
+  // Cute furniture (solid unless noted)
+  BEANBAG: 11,
+  CHAIR: 12,
+  PLANT: 13,
+  FRIDGE: 14,
+  LAMP: 15,
+  PLUSH: 16,
+  TABLE: 17,
+  RUG: 18, // walkable soft prop
+  SHELF: 19,
 };
-
-/** Convert gameplay (pixel) coords → Three.js XZ floor plane */
-export function toWorld(x, y) {
-  return {
-    x: (x / CFG.TILE) * CFG.UNIT,
-    z: (y / CFG.TILE) * CFG.UNIT,
-  };
-}
-
-export function tileToWorld(tx, ty) {
-  return {
-    x: (tx + 0.5) * CFG.UNIT,
-    z: (ty + 0.5) * CFG.UNIT,
-  };
-}

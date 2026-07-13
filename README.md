@@ -1,27 +1,27 @@
 # ELOVE GAME — Lab Escape Demo
 
-Smooth **3D action-puzzle** demo built with **Three.js**, following the game-only [Implementation Plan: ELOVE GAME](https://app.notion.com/p/399c98a9f7ff810585f8d820c1ef51f6).
+True **2D top-down HD-pixel** action-puzzle demo (vanilla Canvas 2D), following the game-only [Implementation Plan: ELOVE GAME](https://app.notion.com/p/399c98a9f7ff810585f8d820c1ef51f6).
 
 You play a cat-girl Meow Hybrid waking in a cracked lab pod on Planet Nars: explore, slash cyborgs, solve a timed eye-key door puzzle, find a cryptic console’s hidden button, and escape.
 
 ## How to run
 
-A local static server is **required** (ES modules + Three.js CDN import map):
+A local static server is **required** (ES modules):
 
 ```bash
 cd /Users/isurividyarathne/Projects/elove-game
 python3 -m http.server 8080
 ```
 
-Then visit [http://localhost:8080](http://localhost:8080).
+Then visit [http://localhost:8080](http://localhost:8080) and hard-refresh (`Cmd+Shift+R` / `Ctrl+Shift+R`).
 
-Requires network once to load Three.js from the CDN (`cdn.jsdelivr.net`).
+Works fully offline — no CDN / Three.js dependency.
 
 ## Controls
 
 | Key | Action |
 |-----|--------|
-| WASD / Arrows | Move (only while held; cleared on blur) |
+| WASD / Arrows | Move (polled each frame; cleared on blur) |
 | J / Space | Slash |
 | E | Interact / grab / console / door |
 | F | Cute-energy force-warp (toss cyborgs) |
@@ -31,7 +31,7 @@ Requires network once to load Three.js from the CDN (`cdn.jsdelivr.net`).
 
 ## Objective loop
 
-On-screen **OBJ** text updates as you progress. Glowing 3D markers + floating labels highlight the pod, closet, marked cyborg, door, console, hidden button, and exit.
+On-screen **OBJ** text updates as you progress. Glowing markers + labels highlight the pod, closet, marked cyborg, door, console, hidden button, and exit.
 
 1. Wake in the cracked pod (west room) — brief tutorial toast after Enter
 2. **Grab the sword** from the glowing closet (optional but strong)
@@ -47,13 +47,13 @@ On-screen **OBJ** text updates as you progress. Glowing 3D markers + floating la
 elove-game/
   index.html          # canvas host + HTML HUD overlays
   css/style.css
-  js/config.js        # palette, constants, tile ids, world helpers
+  js/config.js        # palette, constants, tile ids
   js/stubs.js         # Phase 4 API stubs (inactive)
   js/audio.js         # Web Audio SFX + chiptune bed
   js/world.js         # lab tilemap + collision
   js/entities.js      # player + cyborg logic
-  js/meshes.js        # low-poly characters & props
-  js/scene3d.js       # Three.js scene, lights, camera, markers
+  js/sprites.js       # procedural HD-pixel sprite baking
+  js/render2d.js      # Canvas 2D scene, camera, markers, VFX
   js/game.js          # loop, puzzles, score, HUD
   js/main.js          # entry: input + render loop
   README.md
@@ -61,17 +61,19 @@ elove-game/
 
 ## Tech notes
 
-- **Three.js** WebGL renderer with antialiasing (no pixel scaling / nearest-neighbor)
-- Elevated follow camera (readable overhead third-person)
-- Same light pink / cyan / purple / gold palette as the original demo
+- **Vanilla Canvas 2D** (no p5.js / Three.js on the playable path)
+- Procedural **HD-pixel** sprites (nearest-neighbor, detailed cat-girl / cyborgs / lab tiles)
+- Pixel-perfect camera follow with integer scroll
+- Open top-down lab (no roofs / tunnels hiding the player)
 - HTML/CSS HUD for timer, inventory, objectives, console, and end screens
+- Palette: pink / cyan / purple / gold
 
 ## Implemented vs stubbed
 
 **Implemented**
 
-- Three.js lab (walls, floors, pod, closet, console, door, exit pad)
-- Stylized low-poly cat-girl + cyborgs
+- 2D lab (walls, floors, pod, closet, console, door, exit pad)
+- Procedural HD-pixel cat-girl player and cyborg enemies
 - Movement + follow camera
 - Slash combat + sword power-up + force-warp
 - Timed eye-key puzzle + door unlock
@@ -87,7 +89,6 @@ elove-game/
 - Dimensional shift
 - Summon assist / OP mode
 - Partner-cat 2P, multiplanet progression
-- Hand-authored character models (procedural low-poly stand-ins used)
 
 ## Notion sources
 

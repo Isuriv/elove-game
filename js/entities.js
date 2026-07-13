@@ -1,4 +1,4 @@
-/* Player + cyborg entities (logic only — meshes synced in scene) */
+/* Player + cyborg entities (logic only — sprites synced in render2d) */
 import { CFG } from "./config.js";
 import { World } from "./world.js";
 import { AudioFX } from "./audio.js";

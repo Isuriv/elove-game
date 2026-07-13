@@ -1,7 +1,7 @@
-/* ELOVE GAME — Three.js entry */
+/* ELOVE GAME — 2D canvas entry */
 import { AudioFX } from "./audio.js";
 import { Game } from "./game.js";
-import { Scene3D } from "./scene3d.js";
+import { Scene2D } from "./render2d.js";
 
 const wrap = document.getElementById("game-wrap");
 
@@ -36,12 +36,12 @@ const hud = {
   endBest: document.getElementById("end-best"),
 };
 
-const scene = new Scene3D(wrap);
+const scene = new Scene2D(wrap);
 Game.bind(scene, hud);
-Game.start();
 
 const pressed = new Set();
 let lastMs = performance.now();
+let bootstrapped = false;
 
 function pollKeys() {
   Game.syncMovementKeys({
@@ -69,12 +69,12 @@ window.addEventListener("keydown", (e) => {
   if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(e.code)) {
     e.preventDefault();
   }
-  Game.keyDown(e.code);
+  if (bootstrapped) Game.keyDown(e.code);
 });
 
 window.addEventListener("keyup", (e) => {
   pressed.delete(e.code);
-  Game.keyUp(e.code);
+  if (bootstrapped) Game.keyUp(e.code);
 });
 
 window.addEventListener("pointerdown", () => AudioFX.ensure());
@@ -82,11 +82,20 @@ window.addEventListener("pointerdown", () => AudioFX.ensure());
 function frame(now) {
   const dt = Math.min(50, now - lastMs);
   lastMs = now;
-  pollKeys();
-  Game.update(dt, now);
-  Game.render(now);
+  if (bootstrapped) {
+    pollKeys();
+    Game.update(dt, now);
+    Game.render(now);
+  }
   scene.render();
   requestAnimationFrame(frame);
 }
 
+function boot() {
+  scene.buildWorld();
+  Game.start();
+  bootstrapped = true;
+}
+
+boot();
 requestAnimationFrame(frame);

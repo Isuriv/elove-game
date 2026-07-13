@@ -30,6 +30,36 @@ export const World = (() => {
         if (x === 33 && (y === 18 || y === 19)) t = TILE.DOOR_LOCKED;
         if (x >= 35 && x <= 37 && y >= 17 && y <= 20) t = TILE.EXIT;
 
+        // Cute furniture — corners / walls, keep puzzle paths clear
+        // Pod room (spawn ~6,7 → door 12,6-7)
+        if (x === 2 && y === 2) t = TILE.PLANT;
+        if (x === 10 && y === 2) t = TILE.LAMP;
+        if (x === 2 && y === 11) t = TILE.BEANBAG;
+        if (x === 9 && y === 11) t = TILE.PLUSH;
+        if (x === 4 && y === 3) t = TILE.RUG;
+        // Upper lab (console/btn; gap 18-19,8)
+        if (x === 14 && y === 2) t = TILE.SHELF;
+        if (x === 26 && y === 2) t = TILE.PLANT;
+        if (x === 14 && y === 6) t = TILE.CHAIR;
+        if (x === 25 && y === 6) t = TILE.TABLE;
+        // Mid lab (closet 15,11; gap 16-17,14)
+        if (x === 26 && y === 10) t = TILE.FRIDGE;
+        if (x === 22 && y === 9) t = TILE.PLANT;
+        // Lower hall (gap 16-17,14 → door 28,18-19)
+        if (x === 3 && y === 16) t = TILE.LAMP;
+        if (x === 8 && y === 22) t = TILE.BEANBAG;
+        if (x === 12 && y === 17) t = TILE.RUG;
+        if (x === 20 && y === 20) t = TILE.CHAIR;
+        if (x === 24 && y === 24) t = TILE.PLANT;
+        if (x === 5 && y === 24) t = TILE.PLUSH;
+        if (x === 22 && y === 16) t = TILE.TABLE;
+        // East wing (door 33,18-19 / exit 35-37,17-20)
+        if (x === 30 && y === 4) t = TILE.SHELF;
+        if (x === 36 && y === 6) t = TILE.PLANT;
+        if (x === 31 && y === 12) t = TILE.LAMP;
+        if (x === 36 && y === 23) t = TILE.BEANBAG;
+        if (x === 30 && y === 23) t = TILE.CHAIR;
+
         row.push(t);
       }
       m.push(row);
@@ -64,7 +94,16 @@ export const World = (() => {
       t === TILE.DECOR ||
       t === TILE.CONSOLE ||
       t === TILE.CLOSET ||
-      t === TILE.POD
+      t === TILE.POD ||
+      t === TILE.BEANBAG ||
+      t === TILE.CHAIR ||
+      t === TILE.PLANT ||
+      t === TILE.FRIDGE ||
+      t === TILE.LAMP ||
+      t === TILE.PLUSH ||
+      t === TILE.TABLE ||
+      t === TILE.SHELF
+      // RUG is walkable
     );
   }
 
