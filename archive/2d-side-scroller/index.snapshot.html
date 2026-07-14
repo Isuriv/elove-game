@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ELOVE GAME — Side Scroller</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preload" as="image" href="assets/game/nars-landscape.jpg" />
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <h1>ELOVE GAME</h1>
+      <p class="tagline">Nars Canyon · PixelWhale SF · Side Scroller</p>
+    </header>
+
+    <main id="game-wrap">
+      <div id="title-screen" class="overlay-panel">
+        <div class="title-card">
+          <h2>ELOVE GAME</h2>
+          <p class="sub">Side Scroller · Planet Nars</p>
+          <p class="hint">Press <kbd>Space</kbd> / <kbd>Enter</kbd> or click to start</p>
+          <p id="title-best" class="best"></p>
+          <div id="asset-strip" class="asset-strip hidden" aria-label="Art packs">
+            <img src="assets/imagine/sheets/player-cat-rocket.png" alt="Cat rocket sheet" />
+            <img src="assets/imagine/sheets/enemy-drone.png" alt="Drone sheet" />
+            <img src="assets/imagine/sheets/enemy-cyborg.png" alt="Cyborg sheet" />
+            <img src="assets/imagine/sheets/pickup-blade.png" alt="Blade sheet" />
+          </div>
+          <p class="asset-note">Grok Video sprites · neon synthwave</p>
+        </div>
+      </div>
+
+      <div id="play-hud" class="hidden">
+        <div class="hud-top">
+          <span id="hud-time">TIME 0:00.00</span>
+          <span id="hud-best"></span>
+          <div id="hud-hp" class="hp"></div>
+        </div>
+        <div id="eye-timer" class="eye-timer hidden"></div>
+        <div id="toast" class="toast hidden"></div>
+        <div id="tutorial" class="tutorial hidden">←→ move · Space jump · Click/Z slash</div>
+        <div class="hud-bottom">
+          <div class="inv">
+            <span id="inv-key">FOES:—</span>
+            <span id="inv-sword">BLADE:—</span>
+            <span id="inv-pad">EXIT:LOCK</span>
+            <span id="inv-door" class="hidden"></span>
+          </div>
+          <div class="obj-row">
+            <span class="obj-tag">OBJ</span>
+            <span id="objective">Wake up</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="console-overlay" class="overlay-panel hidden"></div>
+
+      <div id="end-overlay" class="overlay-panel hidden">
+        <div class="end-card">
+          <h2 id="end-title">CLEARED!</h2>
+          <p id="end-sub"></p>
+          <p id="end-best" class="best"></p>
+          <p class="hint">Click or press <kbd>R</kbd> to run again</p>
+        </div>
+      </div>
+    </main>
+
+    <aside class="hud-help" aria-label="Controls">
+      <strong>Controls</strong>
+      <ul>
+        <li><kbd>A</kbd>/<kbd>D</kbd> or <kbd>←</kbd>/<kbd>→</kbd> — Move</li>
+        <li><kbd>Space</kbd> / <kbd>W</kbd> / <kbd>↑</kbd> — Jump <em>(tap short · hold high)</em></li>
+        <li>Click or <kbd>Z</kbd>/<kbd>X</kbd>/<kbd>K</kbd> — Slash</li>
+        <li><kbd>Shift</kbd> or <kbd>F</kbd> — Force toss</li>
+        <li><kbd>R</kbd> — Restart · <kbd>M</kbd> — Mute</li>
+      </ul>
+      <p style="margin:12px 0 0;font-size:0.8rem"><a href="gallery.html" style="color:var(--cyan)">Asset gallery →</a></p>
+    </aside>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

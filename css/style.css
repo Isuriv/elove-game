@@ -1,16 +1,16 @@
 :root {
-  --bg: #1a1224;
-  --panel: #2a1f3d;
-  --pink: #ff7eb9;
-  --cyan: #5ce1e6;
+  --bg: #12081c;
+  --panel: #1a1030;
+  --pink: #ff2ea6;
+  --cyan: #00e8ff;
   --purple: #b388ff;
-  --gold: #ffd166;
+  --gold: #ffe066;
   --ok: #7dffb3;
   --danger: #ff5c8a;
   --text: #f8f0ff;
   --muted: #c4b5d8;
   --cream: #fff5fb;
-  --ink: #2a1838;
+  --ink: #1a0a2e;
 }
 
 * {
@@ -21,9 +21,9 @@ html, body {
   margin: 0;
   min-height: 100%;
   background:
-    radial-gradient(ellipse at 20% 0%, #3a2458 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 100%, #1e3a4a 0%, transparent 45%),
-    var(--bg);
+    radial-gradient(ellipse at 20% 0%, #5a1860 0%, transparent 45%),
+    radial-gradient(ellipse at 80% 100%, #0a4050 0%, transparent 40%),
+    linear-gradient(180deg, #1a0a2e 0%, #12081c 100%);
   color: var(--text);
   font-family: "Trebuchet MS", "Segoe UI", sans-serif;
 }
@@ -52,14 +52,19 @@ html, body {
 
 #game-wrap {
   position: relative;
-  width: 100%;
-  height: min(70vh, 620px);
-  min-height: 420px;
-  background: var(--panel);
-  border: 2px solid #4a3568;
+  width: min(100%, 960px);
+  aspect-ratio: 16 / 9;
+  height: auto;
+  min-height: 0;
+  margin: 0 auto;
+  background: #0a0614;
+  border: 2px solid #ff2ea6;
+  box-shadow:
+    0 0 0 1px #00e8ff44,
+    0 0 24px rgba(255, 46, 166, 0.35),
+    0 12px 40px rgba(0, 0, 0, 0.45);
   border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
 }
 
 #game-wrap canvas,
@@ -67,7 +72,7 @@ html, body {
   display: block;
   width: 100% !important;
   height: 100% !important;
-  /* HD pixel look — crisp nearest-neighbor */
+  /* Native 480×270 → crisp nearest-neighbor upscale */
   image-rendering: pixelated;
   image-rendering: crisp-edges;
 }
@@ -155,6 +160,36 @@ html, body {
   margin-top: 16px;
   font-size: 0.7rem;
   color: #8870a0;
+}
+
+.asset-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  margin: 16px 0 6px;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 8px;
+  border: 1px solid rgba(92, 225, 230, 0.25);
+}
+
+.asset-strip img {
+  height: 36px;
+  width: auto;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  background: #000;
+  border-radius: 4px;
+  padding: 2px;
+}
+
+.asset-note {
+  margin: 0;
+  font-size: 0.7rem;
+  color: var(--cyan);
+  letter-spacing: 0.04em;
 }
 
 #play-hud {
@@ -336,5 +371,5 @@ kbd {
 @media (max-width: 640px) {
   #app { padding: 10px; }
   .topbar h1 { font-size: 1.25rem; }
-  #game-wrap { min-height: 360px; height: 55vh; }
+  #game-wrap { width: min(100%, 96vw); }
 }

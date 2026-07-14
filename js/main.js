@@ -2,6 +2,7 @@
 import { AudioFX } from "./audio.js";
 import { Game } from "./game.js";
 import { Scene2D } from "./render2d.js";
+import { preloadArt } from "./assets.js";
 
 const wrap = document.getElementById("game-wrap");
 
@@ -47,8 +48,7 @@ function pollKeys() {
   Game.syncMovementKeys({
     left: pressed.has("ArrowLeft") || pressed.has("KeyA"),
     right: pressed.has("ArrowRight") || pressed.has("KeyD"),
-    up: pressed.has("ArrowUp") || pressed.has("KeyW"),
-    down: pressed.has("ArrowDown") || pressed.has("KeyS"),
+    jump: pressed.has("ArrowUp") || pressed.has("KeyW") || pressed.has("Space"),
     focused: document.hasFocus(),
   });
 }
@@ -91,10 +91,17 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 
-function boot() {
+async function boot() {
+  try {
+    await preloadArt();
+  } catch (err) {
+    console.warn("Art preload partial/failed — procedural fallback:", err);
+  }
   scene.buildWorld();
   Game.start();
   bootstrapped = true;
+  const strip = document.getElementById("asset-strip");
+  if (strip) strip.classList.remove("hidden");
 }
 
 boot();

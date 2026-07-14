@@ -1,7 +1,7 @@
-/* Core game state — lab escape vertical slice (2D canvas) */
-import { CFG, TILE } from "./config.js";
+/* Side-scroller combat run — clear drones & cyborgs, reach exit */
+import { CFG } from "./config.js";
 import { World } from "./world.js";
-import { Player, Cyborg } from "./entities.js";
+import { Player, Cyborg, Drone } from "./entities.js";
 import { AudioFX } from "./audio.js";
 
 export const Game = (() => {
@@ -17,27 +17,22 @@ export const Game = (() => {
   let player = null;
   let enemies = [];
   let loot = [];
-  let inventory = { key: false, sword: false, consoleRead: false, buttonPressed: false, doorUnlocked: false };
+  let inventory = { sword: false, cleared: false };
   let runStart = 0;
   let runTime = 0;
-  let keyDeadline = null;
   let bestMs = null;
   let toast = "";
   let toastUntil = 0;
   let wakeUntil = 0;
-  let consoleOpen = false;
-  let keys = { left: false, right: false, up: false, down: false };
-  let exitNagUntil = 0;
   let tutorialUntil = 0;
+  let keys = { left: false, right: false, jump: false };
   let scene = null;
   let hud = null;
-  let forceFlashUntil = 0;
 
   function clearKeys() {
     keys.left = false;
     keys.right = false;
-    keys.up = false;
-    keys.down = false;
+    keys.jump = false;
   }
 
   function syncMovementKeys(state) {
@@ -47,8 +42,7 @@ export const Game = (() => {
     }
     keys.left = !!state.left;
     keys.right = !!state.right;
-    keys.up = !!state.up;
-    keys.down = !!state.down;
+    keys.jump = !!state.jump;
   }
 
   function loadBest() {
@@ -88,23 +82,33 @@ export const Game = (() => {
       scene.clearEntities();
     }
 
-    player = new Player(6 * CFG.TILE + 8, 7 * CFG.TILE + 8);
+    const spawn = World.spawnPoint();
+    player = new Player(spawn.x, spawn.y);
     enemies = [
-      new Cyborg(18 * CFG.TILE, 11 * CFG.TILE, true),
-      new Cyborg(22 * CFG.TILE, 16 * CFG.TILE, false),
-      new Cyborg(15 * CFG.TILE, 18 * CFG.TILE, false),
+      new Cyborg(18 * CFG.TILE, (World.H - 4) * CFG.TILE),
+      new Cyborg(36 * CFG.TILE, (World.H - 4) * CFG.TILE),
+      new Cyborg(55 * CFG.TILE, (World.H - 4) * CFG.TILE),
+      new Cyborg(78 * CFG.TILE, (World.H - 4) * CFG.TILE),
+      new Drone(20 * CFG.TILE, 5 * CFG.TILE),
+      new Drone(40 * CFG.TILE, 4 * CFG.TILE),
+      new Drone(60 * CFG.TILE, 5 * CFG.TILE),
+      new Drone(74 * CFG.TILE, 4.5 * CFG.TILE),
     ];
-    loot = [{ type: "sword", x: 15 * CFG.TILE + 8, y: 12 * CFG.TILE + 4, taken: false }];
-    inventory = { key: false, sword: false, consoleRead: false, buttonPressed: false, doorUnlocked: false };
-    keyDeadline = null;
-    consoleOpen = false;
+    loot = [
+      { type: "sword", x: 8 * CFG.TILE, y: 10 * CFG.TILE - 6, taken: false },
+      { type: "heart", x: 22 * CFG.TILE, y: 9 * CFG.TILE - 6, taken: false },
+      { type: "shield", x: 46 * CFG.TILE, y: 7 * CFG.TILE - 6, taken: false },
+      { type: "battery", x: 64 * CFG.TILE, y: 8 * CFG.TILE - 6, taken: false },
+      { type: "magnet", x: 34 * CFG.TILE, y: 8 * CFG.TILE - 6, taken: false },
+    ];
+    inventory = { sword: false, cleared: false, shield: 0, magnetUntil: 0, battery: false };
     clearKeys();
     runStart = performance.now();
     runTime = 0;
     mode = STATE.WAKE;
-    wakeUntil = performance.now() + 1800;
-    tutorialUntil = wakeUntil + 3200;
-    showToast("Systems online… wake up, Meow Hybrid.", 1800);
+    wakeUntil = performance.now() + 1200;
+    tutorialUntil = wakeUntil + 3500;
+    showToast("Nars canyon run — clear the hostiles!", 1600);
 
     if (scene) {
       scene.spawnPlayer(player);
@@ -123,7 +127,7 @@ export const Game = (() => {
     AudioFX.startBed();
     spawnRun();
     mode = STATE.PLAY;
-    showToast("New run — escape the lab!", 1600);
+    showToast("New run — fight through!", 1400);
   }
 
   function formatTime(ms) {
@@ -138,100 +142,44 @@ export const Game = (() => {
     return Math.hypot(ax - bx, ay - by) < r;
   }
 
+  function aliveCount() {
+    return enemies.filter((e) => e.alive).length;
+  }
+
+  function applyPickup(item, now) {
+    item.taken = true;
+    if (item.type === "sword") {
+      inventory.sword = true;
+      showToast("Energy blade online — harder hits!");
+    } else if (item.type === "heart") {
+      player.hp = Math.min(player.maxHp, player.hp + 1);
+      showToast("Repair pack — +1 HP");
+    } else if (item.type === "shield") {
+      inventory.shield = (inventory.shield || 0) + 1;
+      player.shieldCharges = (player.shieldCharges || 0) + 1;
+      showToast("Hard-light shield charge!");
+    } else if (item.type === "battery") {
+      inventory.battery = true;
+      player.batteryBoost = true;
+      player.forceCD = Math.min(player.forceCD, now + 200);
+      showToast("Overclock cell — force ready sooner!");
+    } else if (item.type === "magnet") {
+      inventory.magnetUntil = now + 12000;
+      showToast("Scrap magnet — pull loot closer!");
+    }
+    AudioFX.pickup();
+  }
+
   function interact(now) {
     if (!player || !player.alive || mode !== STATE.PLAY) return;
-    const { tx, ty } = World.worldToTile(player.x, player.y);
-    player.state = "grab";
-
     for (const item of loot) {
       if (item.taken) continue;
-      if (near(player.x, player.y, item.x, item.y, 14)) {
-        item.taken = true;
-        if (item.type === "sword") {
-          inventory.sword = true;
-          showToast("Giant sword acquired! Slash hits harder.");
-        } else if (item.type === "eye") {
-          inventory.key = true;
-          keyDeadline = now + CFG.KEY_TIMER_MS;
-          showToast("Cyborg eye-key! Door timer started!");
-        }
-        AudioFX.pickup();
+      if (near(player.x, player.y, item.x, item.y, 16)) {
+        applyPickup(item, now);
         return;
       }
     }
-
-    if (World.get(tx, ty) === TILE.CLOSET || World.get(tx + 1, ty) === TILE.CLOSET || World.get(tx, ty - 1) === TILE.CLOSET) {
-      if (!inventory.sword) {
-        const sword = loot.find((l) => l.type === "sword");
-        if (sword && !sword.taken) {
-          sword.taken = true;
-          inventory.sword = true;
-          AudioFX.pickup();
-          showToast("Sword yanked from the closet!");
-          return;
-        }
-      }
-      showToast("Closet: empty lab coats & glitter.");
-      return;
-    }
-
-    if (
-      World.get(tx, ty) === TILE.CONSOLE ||
-      World.get(tx, ty - 1) === TILE.CONSOLE ||
-      World.get(tx + 1, ty) === TILE.CONSOLE ||
-      near(player.x, player.y, 19 * CFG.TILE + 8, 4 * CFG.TILE + 8, 20)
-    ) {
-      inventory.consoleRead = true;
-      consoleOpen = !consoleOpen;
-      AudioFX.pickup();
-      if (consoleOpen) showToast("Console: cryptic uplink online.", 2500);
-      return;
-    }
-
-    if (near(player.x, player.y, 21 * CFG.TILE + 2, 5 * CFG.TILE + 10, 12) || World.get(tx, ty) === TILE.HIDDEN_BTN) {
-      if (!inventory.buttonPressed) {
-        inventory.buttonPressed = true;
-        AudioFX.unlock();
-        showToast("Hidden button clicked! Exit pad armed.");
-      } else {
-        showToast("Button already pressed.");
-      }
-      return;
-    }
-
-    if (
-      near(player.x, player.y, 33 * CFG.TILE, 18.5 * CFG.TILE, 22) ||
-      World.get(tx, ty) === TILE.DOOR_LOCKED ||
-      World.get(tx, ty) === TILE.DOOR_OPEN
-    ) {
-      if (inventory.doorUnlocked) {
-        showToast("Door is open — reach the green pad!");
-        return;
-      }
-      if (!inventory.key) {
-        showToast("Locked. Needs a cyborg eye-key.");
-        return;
-      }
-      if (keyDeadline && now > keyDeadline) {
-        showToast("Timer expired! Eye-key fried. Defeat another? (restart)");
-        inventory.key = false;
-        keyDeadline = null;
-        const hasKeyEnemy = enemies.some((e) => e.dropsKey && e.alive);
-        if (!hasKeyEnemy) {
-          enemies.push(new Cyborg(20 * CFG.TILE, 12 * CFG.TILE, true));
-          showToast("A spare cyborg stomps in with a fresh eye…");
-        }
-        return;
-      }
-      inventory.doorUnlocked = true;
-      World.unlockDoor();
-      keyDeadline = null;
-      AudioFX.unlock();
-      showToast("Door unlocked!");
-      return;
-    }
-
-    showToast("Nothing to use here.");
+    showToast("Nothing to grab.");
   }
 
   function update(dt, now) {
@@ -240,7 +188,7 @@ export const Game = (() => {
     if (mode === STATE.WAKE) {
       if (now >= wakeUntil) {
         mode = STATE.PLAY;
-        showToast("WASD move · E interact · J slash — grab the sword!", 3200);
+        showToast("A/D move · W/Space jump · J slash · clear foes!", 3400);
       }
       return;
     }
@@ -250,46 +198,43 @@ export const Game = (() => {
       player.update(dt, keys, now);
       for (const e of enemies) e.update(dt, player, now);
 
+      // Auto-pickup nearby loot
       for (const item of loot) {
-        if (!item.taken && near(player.x, player.y, item.x, item.y, 10)) {
-          if (item.type === "eye") {
-            item.taken = true;
-            inventory.key = true;
-            keyDeadline = now + CFG.KEY_TIMER_MS;
-            AudioFX.pickup();
-            showToast("Eye-key grabbed! Race the door!");
+        if (item.taken) continue;
+        const reach = inventory.magnetUntil > now ? 28 : 12;
+        if (near(player.x, player.y, item.x, item.y, reach)) {
+          applyPickup(item, now);
+        } else if (inventory.magnetUntil > now) {
+          const dx = player.x - item.x;
+          const dy = player.y - item.y;
+          const d = Math.hypot(dx, dy) || 1;
+          if (d < 90) {
+            item.x += (dx / d) * 0.9;
+            item.y += (dy / d) * 0.55;
           }
         }
       }
 
-      if (keyDeadline) {
-        const left = keyDeadline - now;
-        if (left > 0 && left < 5000 && Math.floor(left / 500) !== Math.floor((left + dt) / 500)) {
-          AudioFX.tick();
-        }
-        if (left <= 0) {
-          keyDeadline = null;
-          inventory.key = false;
-          showToast("Lockdown! Eye-key burned out.");
-          enemies.push(new Cyborg(17 * CFG.TILE, 10 * CFG.TILE, true));
-        }
+      if (aliveCount() === 0 && !inventory.cleared) {
+        inventory.cleared = true;
+        AudioFX.unlock();
+        showToast("Sector clear — race to the EXIT pad!");
       }
 
-      const { tx, ty } = World.worldToTile(player.x, player.y);
-      if (World.get(tx, ty) === TILE.EXIT) {
-        if (inventory.doorUnlocked && !inventory.buttonPressed) {
-          if (now > exitNagUntil) {
-            showToast("Pad inert — find the hidden console button!");
-            exitNagUntil = now + 2000;
-          }
-        } else if (inventory.doorUnlocked && inventory.buttonPressed) {
-          mode = STATE.WIN;
-          player.state = "success";
-          const record = saveBest(runTime);
-          AudioFX.win();
-          if (scene) scene.playWinFlourish(player);
-          showToast(record ? "NEW BEST ESCAPE!" : "Escaped to the rocket bay!", 4000);
-        }
+      const er = World.exitRect();
+      if (
+        inventory.cleared &&
+        player.x > er.x &&
+        player.x < er.x + er.w &&
+        player.y > er.y - 20 &&
+        player.y < er.y + er.h + 20
+      ) {
+        mode = STATE.WIN;
+        player.state = "success";
+        const record = saveBest(runTime);
+        AudioFX.win();
+        if (scene) scene.playWinFlourish(player);
+        showToast(record ? "NEW BEST CLEAR!" : "Canyon cleared!", 4000);
       }
 
       if (!player.alive) {
@@ -314,14 +259,16 @@ export const Game = (() => {
     const dmgBonus = inventory.sword;
     for (const e of enemies) {
       if (!e.alive) continue;
-      if (near(hb.x, hb.y, e.x, e.y, hb.r + (dmgBonus ? 4 : 0))) {
-        if (scene) scene.playHitSparks(e.x, e.y, e.dropsKey ? CFG.COLORS.cyan : CFG.COLORS.gold);
-        const drop = e.takeHit(now, player.x);
-        if (dmgBonus && e.alive) e.takeHit(now, player.x);
-        if (drop && drop.type === "eye") {
-          loot.push({ type: "eye", x: drop.x, y: drop.y - 4, taken: false });
-          showToast("Eye-key dropped! Press E near it.");
+      if (near(hb.x, hb.y, e.x, e.y, hb.r + (dmgBonus ? 10 : 4))) {
+        if (scene) {
+          scene.playHitSparks(
+            e.x,
+            e.y,
+            e.kind === "drone" ? CFG.COLORS.danger : CFG.COLORS.gold
+          );
         }
+        e.takeHit(now, player.x);
+        if (dmgBonus && e.alive) e.takeHit(now, player.x);
       }
     }
   }
@@ -336,15 +283,25 @@ export const Game = (() => {
     for (const e of enemies) {
       if (e.alive && e.applyForce(player.x, player.y)) hit++;
     }
-    forceFlashUntil = now + 200;
     if (scene) scene.showForceRing(player, now);
     showToast(hit ? `Cute-energy toss! (${hit})` : "No targets in range.");
   }
 
   function keyDown(code) {
     const now = performance.now();
-    if (code === "KeyJ" || code === "Space") {
+    if (code === "KeyJ") {
       onSlash(now);
+      return false;
+    }
+    if (code === "Space" || code === "KeyW" || code === "ArrowUp") {
+      if (mode === STATE.TITLE) {
+        AudioFX.ensure();
+        AudioFX.startBed();
+        spawnRun();
+        return false;
+      }
+      if (player) player.bufferJump();
+      keys.jump = true;
       return false;
     }
     if (code === "KeyE") interact(now);
@@ -362,22 +319,15 @@ export const Game = (() => {
     return true;
   }
 
-  function keyUp(_code) {}
+  function keyUp(code) {
+    if (code === "Space" || code === "KeyW" || code === "ArrowUp") {
+      keys.jump = false;
+    }
+  }
 
   function objectiveText() {
-    if (!inventory.sword) return "Grab the sword from the closet";
-    const keyEnemyAlive = enemies.some((e) => e.dropsKey && e.alive);
-    const eyeLoot = loot.some((l) => l.type === "eye" && !l.taken);
-    if (!inventory.key) {
-      if (eyeLoot) return "Pick up the eye-key (E)";
-      if (keyEnemyAlive) return "Defeat the marked cyborg";
-      return "Defeat the marked cyborg";
-    }
-    if (!inventory.doorUnlocked) return "Use the eye-key on the door — hurry!";
-    if (!inventory.buttonPressed) {
-      if (!inventory.consoleRead) return "Read the console (north) for a clue";
-      return "Find the hidden button near the console";
-    }
+    const left = aliveCount();
+    if (left > 0) return `Defeat hostiles — ${left} remaining`;
     return "Reach the green EXIT pad";
   }
 
@@ -385,10 +335,9 @@ export const Game = (() => {
     if (!hud) return;
 
     const playing = mode !== STATE.TITLE;
-
     hud.titleScreen.classList.toggle("hidden", playing);
     hud.playHud.classList.toggle("hidden", !playing);
-    hud.consoleOverlay.classList.toggle("hidden", !consoleOpen || !playing);
+    if (hud.consoleOverlay) hud.consoleOverlay.classList.add("hidden");
     hud.endOverlay.classList.toggle("hidden", mode !== STATE.WIN && mode !== STATE.DEAD);
 
     if (!playing) {
@@ -401,31 +350,30 @@ export const Game = (() => {
     hud.time.textContent = `TIME ${formatTime(runTime)}`;
     hud.best.textContent = bestMs != null ? `BEST ${formatTime(bestMs)}` : "";
 
-    // HP
     let hearts = "";
     for (let i = 0; i < player.maxHp; i++) {
       hearts += `<span class="heart ${i < player.hp ? "on" : "off"}"></span>`;
     }
     hud.hp.innerHTML = hearts;
 
-    hud.invKey.textContent = inventory.key ? "KEY:EYE" : "KEY:—";
-    hud.invKey.classList.toggle("lit", inventory.key);
-    hud.invSword.textContent = inventory.sword ? "SWORD" : "SWORD:—";
-    hud.invSword.classList.toggle("lit", inventory.sword);
-    hud.invPad.textContent = inventory.buttonPressed ? "PAD:ARMED" : "PAD:OFF";
-    hud.invPad.classList.toggle("lit", inventory.buttonPressed);
-    hud.invDoor.textContent = inventory.doorUnlocked ? "DOOR:OPEN" : "DOOR:LOCK";
-    hud.invDoor.classList.toggle("lit", inventory.doorUnlocked);
-    hud.invDoor.classList.toggle("danger", !inventory.doorUnlocked);
-
-    if (keyDeadline && mode === STATE.PLAY) {
-      const left = Math.max(0, keyDeadline - now);
-      hud.eyeTimer.classList.remove("hidden");
-      hud.eyeTimer.textContent = `EYE TIMER ${formatTime(left)}`;
-      hud.eyeTimer.classList.toggle("urgent", left < 8000);
-    } else {
-      hud.eyeTimer.classList.add("hidden");
+    const left = aliveCount();
+    if (hud.invKey) {
+      hud.invKey.textContent = `FOES:${left}`;
+      hud.invKey.classList.toggle("lit", left === 0);
     }
+    if (hud.invSword) {
+      hud.invSword.textContent = inventory.sword ? "BLADE" : "BLADE:—";
+      hud.invSword.classList.toggle("lit", inventory.sword);
+    }
+    if (hud.invPad) {
+      hud.invPad.textContent = inventory.cleared ? "EXIT:OPEN" : "EXIT:LOCK";
+      hud.invPad.classList.toggle("lit", inventory.cleared);
+    }
+    if (hud.invDoor) {
+      hud.invDoor.textContent = "";
+      hud.invDoor.classList.add("hidden");
+    }
+    if (hud.eyeTimer) hud.eyeTimer.classList.add("hidden");
 
     if (now < toastUntil && toast) {
       hud.toast.classList.remove("hidden");
@@ -438,16 +386,17 @@ export const Game = (() => {
 
     if (mode === STATE.PLAY && now < tutorialUntil && now >= wakeUntil) {
       hud.tutorial.classList.remove("hidden");
+      hud.tutorial.textContent = "Slash cyborgs & drones · jump the gaps · reach EXIT";
     } else {
       hud.tutorial.classList.add("hidden");
     }
 
     if (mode === STATE.WIN || mode === STATE.DEAD) {
       const won = mode === STATE.WIN;
-      hud.endTitle.textContent = won ? "ESCAPED!" : "DOWNED";
+      hud.endTitle.textContent = won ? "CLEARED!" : "DOWNED";
       hud.endTitle.classList.toggle("win", won);
       hud.endTitle.classList.toggle("lose", !won);
-      hud.endSub.textContent = won ? `Time ${formatTime(runTime)}` : "The lab claims another hybrid.";
+      hud.endSub.textContent = won ? `Time ${formatTime(runTime)}` : "The canyon claims another hybrid.";
       hud.endBest.textContent = won && bestMs != null ? `Best ${formatTime(bestMs)}` : "";
     }
   }

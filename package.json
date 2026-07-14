@@ -1,0 +1,24 @@
+{
+  "name": "elove-game",
+  "version": "1.0.0",
+  "description": "True **2D top-down HD-pixel** action-puzzle demo (vanilla Canvas 2D), following the game-only [Implementation Plan: ELOVE GAME](https://app.notion.com/p/399c98a9f7ff810585f8d820c1ef51f6).",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "imagine:sheets": "node scripts/grok-imagine-sheets.mjs",
+    "imagine:video": "node scripts/grok-video-sprites.mjs",
+    "imagine:video:player": "node scripts/grok-video-sprites.mjs player"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Isuriv/elove-game.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Isuriv/elove-game/issues"
+  },
+  "homepage": "https://github.com/Isuriv/elove-game#readme"
+}

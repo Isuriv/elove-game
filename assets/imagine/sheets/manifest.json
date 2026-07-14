@@ -1,0 +1,42 @@
+{
+  "generatedAt": "2026-07-14T00:35:17.348Z",
+  "source": "grok-video",
+  "sheets": {
+    "player-cat-rocket": {
+      "file": "player-cat-rocket.png",
+      "cols": 8,
+      "rows": 1,
+      "cell": 128,
+      "anims": {
+        "idle": [
+          0,
+          1
+        ],
+        "fly": [
+          2,
+          3,
+          4,
+          5
+        ],
+        "slash": [
+          6,
+          7
+        ],
+        "hurt": [
+          0
+        ]
+      },
+      "holdMs": {
+        "idle": 480,
+        "fly": 180,
+        "slash": [
+          180,
+          140
+        ],
+        "hurt": 140
+      },
+      "source": "grok-video-chibi",
+      "video": "assets/imagine/video/player-cat-rocket-edited.mp4"
+    }
+  }
+}

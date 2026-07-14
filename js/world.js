@@ -1,69 +1,58 @@
-/* Lab tilemap + collision helpers */
+/* Side-scroller platform map + collision */
 import { CFG, TILE } from "./config.js";
 
 export const World = (() => {
-  const W = 40;
-  const H = 28;
+  const W = 96;
+  const H = 14;
 
   function makeMap() {
     const m = [];
     for (let y = 0; y < H; y++) {
       const row = [];
       for (let x = 0; x < W; x++) {
-        let t = TILE.FLOOR;
-        if (x === 0 || y === 0 || x === W - 1 || y === H - 1) t = TILE.WALL;
-        if (x === 12 && y > 0 && y < 14) t = TILE.WALL;
-        if (y === 14 && x > 0 && x < 28) t = TILE.WALL;
-        if (x === 28 && y > 0 && y < H - 1) t = TILE.WALL;
-        if (y === 8 && x >= 12 && x < 28) t = TILE.WALL;
-
-        if (x === 12 && (y === 6 || y === 7)) t = TILE.FLOOR;
-        if (y === 8 && (x === 18 || x === 19)) t = TILE.FLOOR;
-        if (y === 14 && (x === 16 || x === 17)) t = TILE.FLOOR;
-        if (x === 28 && (y === 18 || y === 19)) t = TILE.FLOOR;
-
-        if ((x === 20 && y === 11) || (x === 24 && y === 5)) t = TILE.DECOR;
-        if (x === 6 && y === 5) t = TILE.POD;
-        if (x === 15 && y === 11) t = TILE.CLOSET;
-        if (x === 19 && y === 4) t = TILE.CONSOLE;
-        if (x === 21 && y === 5) t = TILE.HIDDEN_BTN;
-        if (x === 33 && (y === 18 || y === 19)) t = TILE.DOOR_LOCKED;
-        if (x >= 35 && x <= 37 && y >= 17 && y <= 20) t = TILE.EXIT;
-
-        // Cute furniture — corners / walls, keep puzzle paths clear
-        // Pod room (spawn ~6,7 → door 12,6-7)
-        if (x === 2 && y === 2) t = TILE.PLANT;
-        if (x === 10 && y === 2) t = TILE.LAMP;
-        if (x === 2 && y === 11) t = TILE.BEANBAG;
-        if (x === 9 && y === 11) t = TILE.PLUSH;
-        if (x === 4 && y === 3) t = TILE.RUG;
-        // Upper lab (console/btn; gap 18-19,8)
-        if (x === 14 && y === 2) t = TILE.SHELF;
-        if (x === 26 && y === 2) t = TILE.PLANT;
-        if (x === 14 && y === 6) t = TILE.CHAIR;
-        if (x === 25 && y === 6) t = TILE.TABLE;
-        // Mid lab (closet 15,11; gap 16-17,14)
-        if (x === 26 && y === 10) t = TILE.FRIDGE;
-        if (x === 22 && y === 9) t = TILE.PLANT;
-        // Lower hall (gap 16-17,14 → door 28,18-19)
-        if (x === 3 && y === 16) t = TILE.LAMP;
-        if (x === 8 && y === 22) t = TILE.BEANBAG;
-        if (x === 12 && y === 17) t = TILE.RUG;
-        if (x === 20 && y === 20) t = TILE.CHAIR;
-        if (x === 24 && y === 24) t = TILE.PLANT;
-        if (x === 5 && y === 24) t = TILE.PLUSH;
-        if (x === 22 && y === 16) t = TILE.TABLE;
-        // East wing (door 33,18-19 / exit 35-37,17-20)
-        if (x === 30 && y === 4) t = TILE.SHELF;
-        if (x === 36 && y === 6) t = TILE.PLANT;
-        if (x === 31 && y === 12) t = TILE.LAMP;
-        if (x === 36 && y === 23) t = TILE.BEANBAG;
-        if (x === 30 && y === 23) t = TILE.CHAIR;
-
+        let t = TILE.EMPTY;
+        if (y >= H - 2) t = TILE.SOLID;
+        if (x === 0 || x === W - 1) t = TILE.SOLID;
+        if (y === 0) t = TILE.SOLID;
         row.push(t);
       }
       m.push(row);
     }
+
+    const plats = [
+      [6, 10, 5],
+      [14, 8, 4],
+      [22, 9, 6],
+      [30, 7, 4],
+      [38, 9, 5],
+      [46, 6, 4],
+      [54, 8, 6],
+      [64, 7, 5],
+      [72, 9, 4],
+      [80, 8, 5],
+    ];
+    for (const [px, py, len] of plats) {
+      for (let i = 0; i < len; i++) {
+        if (px + i > 0 && px + i < W - 1 && py > 0 && py < H - 2) {
+          m[py][px + i] = TILE.PLATFORM;
+        }
+      }
+    }
+
+    for (const gap of [
+      [28, 30],
+      [50, 52],
+      [70, 72],
+    ]) {
+      for (let x = gap[0]; x <= gap[1]; x++) {
+        m[H - 2][x] = TILE.EMPTY;
+        m[H - 1][x] = TILE.EMPTY;
+      }
+    }
+
+    m[H - 3][W - 5] = TILE.EXIT;
+    m[H - 3][W - 4] = TILE.EXIT;
+
     return m;
   }
 
@@ -78,76 +67,83 @@ export const World = (() => {
   }
 
   function get(tx, ty) {
-    if (!inBounds(tx, ty)) return TILE.WALL;
+    if (!inBounds(tx, ty)) return TILE.SOLID;
     return map[ty][tx];
   }
 
-  function set(tx, ty, v) {
-    if (inBounds(tx, ty)) map[ty][tx] = v;
-  }
-
-  function solid(tx, ty) {
-    const t = get(tx, ty);
-    return (
-      t === TILE.WALL ||
-      t === TILE.DOOR_LOCKED ||
-      t === TILE.DECOR ||
-      t === TILE.CONSOLE ||
-      t === TILE.CLOSET ||
-      t === TILE.POD ||
-      t === TILE.BEANBAG ||
-      t === TILE.CHAIR ||
-      t === TILE.PLANT ||
-      t === TILE.FRIDGE ||
-      t === TILE.LAMP ||
-      t === TILE.PLUSH ||
-      t === TILE.TABLE ||
-      t === TILE.SHELF
-      // RUG is walkable
-    );
-  }
-
-  function collides(px, py, hw = 5, hh = 6) {
-    const points = [
-      [px - hw, py - hh],
-      [px + hw, py - hh],
-      [px - hw, py + hh],
-      [px + hw, py + hh],
-    ];
-    for (const [x, y] of points) {
-      const tx = Math.floor(x / CFG.TILE);
-      const ty = Math.floor(y / CFG.TILE);
-      if (solid(tx, ty)) return true;
+  function rectHitsSolid(left, top, right, bottom, vy = 0) {
+    const x0 = Math.floor(left / CFG.TILE);
+    const x1 = Math.floor(right / CFG.TILE);
+    const y0 = Math.floor(top / CFG.TILE);
+    const y1 = Math.floor(bottom / CFG.TILE);
+    for (let ty = y0; ty <= y1; ty++) {
+      for (let tx = x0; tx <= x1; tx++) {
+        const t = get(tx, ty);
+        if (t === TILE.SOLID) return true;
+        if (t === TILE.PLATFORM && vy >= 0) {
+          const tileTop = ty * CFG.TILE;
+          // Only when crossing onto the platform from above
+          if (bottom >= tileTop && bottom <= tileTop + 5 && top < tileTop) return true;
+        }
+      }
     }
     return false;
   }
 
-  function tryMove(px, py, dx, dy, hw = 5, hh = 6) {
-    let nx = px + dx;
-    let ny = py + dy;
-    if (!collides(nx, py, hw, hh)) px = nx;
-    if (!collides(px, ny, hw, hh)) py = ny;
-    return { x: px, y: py };
-  }
+  function tryMove(px, py, dx, dy, hw = 6, hh = 8) {
+    let x = px;
+    let y = py;
 
-  function unlockDoor() {
-    for (let y = 0; y < H; y++) {
-      for (let x = 0; x < W; x++) {
-        if (map[y][x] === TILE.DOOR_LOCKED) map[y][x] = TILE.DOOR_OPEN;
+    // Horizontal
+    if (dx !== 0) {
+      const nx = x + dx;
+      if (
+        !rectHitsSolid(nx - hw, y - hh, nx + hw, y + hh, 0)
+      ) {
+        x = nx;
       }
     }
+
+    // Vertical
+    if (dy !== 0) {
+      const ny = y + dy;
+      if (!rectHitsSolid(x - hw, ny - hh, x + hw, ny + hh, dy)) {
+        y = ny;
+      } else if (dy > 0) {
+        // Snap to floor / platform top
+        const feet = y + hh;
+        const ty = Math.floor((feet + dy) / CFG.TILE);
+        y = ty * CFG.TILE - hh - 0.05;
+      } else {
+        // Hit ceiling
+        const head = y - hh + dy;
+        const ty = Math.floor(head / CFG.TILE);
+        y = (ty + 1) * CFG.TILE + hh + 0.05;
+      }
+    }
+
+    return { x, y };
+  }
+
+  function onGround(px, py, hw = 6, hh = 8) {
+    return rectHitsSolid(px - hw, py - hh + 1, px + hw, py + hh + 1.5, 1);
   }
 
   function worldToTile(x, y) {
     return { tx: Math.floor(x / CFG.TILE), ty: Math.floor(y / CFG.TILE) };
   }
 
-  function forEachTile(fn) {
-    for (let ty = 0; ty < H; ty++) {
-      for (let tx = 0; tx < W; tx++) {
-        fn(tx, ty, map[ty][tx]);
-      }
-    }
+  function spawnPoint() {
+    return { x: 3 * CFG.TILE + 8, y: (H - 4) * CFG.TILE };
+  }
+
+  function exitRect() {
+    return {
+      x: (W - 5) * CFG.TILE,
+      y: (H - 4) * CFG.TILE,
+      w: 2 * CFG.TILE,
+      h: CFG.TILE,
+    };
   }
 
   return {
@@ -155,13 +151,11 @@ export const World = (() => {
     H,
     reset,
     get,
-    set,
-    solid,
-    collides,
     tryMove,
-    unlockDoor,
+    onGround,
     worldToTile,
-    forEachTile,
+    spawnPoint,
+    exitRect,
     pixelW: () => W * CFG.TILE,
     pixelH: () => H * CFG.TILE,
   };

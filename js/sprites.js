@@ -670,30 +670,94 @@ export function makeLootSprites() {
 
 export function makeMarkerGlow() {
   const c = document.createElement("canvas");
-  c.width = 32;
-  c.height = 32;
+  c.width = 20;
+  c.height = 20;
   const ctx = c.getContext("2d");
-  const g = ctx.createRadialGradient(16, 16, 2, 16, 16, 15);
+  const g = ctx.createRadialGradient(10, 10, 1, 10, 10, 9);
   g.addColorStop(0, "rgba(255,255,255,0.95)");
   g.addColorStop(0.35, "rgba(255,255,255,0.45)");
   g.addColorStop(1, "rgba(255,255,255,0)");
   ctx.fillStyle = g;
-  ctx.fillRect(0, 0, 32, 32);
+  ctx.fillRect(0, 0, 20, 20);
   return c;
 }
 
 export function makeSlashArc() {
   return bakeGrid(
     [
-      "..........XXXX......",
-      "........XXGGGX......",
-      "......XXGGG.........",
-      "....XXGGG...........",
-      "..XXGGG.............",
-      ".XGGG...............",
-      "XGG.................",
-      "XG..................",
+      "................XXXXXX..........",
+      "..............XXGGGGGX..........",
+      "............XXGGGGG.............",
+      "..........XXGGGGG...............",
+      "........XXGGGGG.................",
+      "......XXGGGGG...................",
+      "....XXGGGGG.....................",
+      "..XXGGGGG.......................",
+      ".XGGGGG.........................",
+      "XGGGG...........................",
+      "XGGG............................",
+      "XGG.............................",
     ],
     2
   );
+}
+
+/** Long neon energy sword for the cat slash attack. */
+export function makeNeonSword() {
+  return bakeGrid(
+    [
+      "......C.",
+      ".....CG.",
+      "....CGG.",
+      "...CGGX.",
+      "..CGGX..",
+      ".CGGX...",
+      "CGGX....",
+      "GGX.....",
+      "GX......",
+      "UU......",
+      "UU......",
+      "KK......",
+    ],
+    2
+  );
+}
+
+/** Wide crescent slash burst (outer magenta / inner cyan). */
+export function makeBigSlashBurst() {
+  const c = document.createElement("canvas");
+  c.width = 72;
+  c.height = 48;
+  const ctx = c.getContext("2d");
+  ctx.imageSmoothingEnabled = false;
+  // Outer magenta arc
+  ctx.strokeStyle = "#ff2ea6";
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.arc(8, 24, 30, -1.2, 1.2);
+  ctx.stroke();
+  ctx.strokeStyle = "#ff9ad5";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(8, 24, 28, -1.15, 1.15);
+  ctx.stroke();
+  // Inner cyan core
+  ctx.strokeStyle = "#00e8ff";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(10, 24, 22, -1.0, 1.0);
+  ctx.stroke();
+  ctx.strokeStyle = "#ffffff";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(12, 24, 16, -0.85, 0.85);
+  ctx.stroke();
+  // Sparks along the edge
+  ctx.fillStyle = "#ffe066";
+  for (let i = 0; i < 7; i++) {
+    const a = -1.1 + i * 0.35;
+    const r = 30;
+    ctx.fillRect(8 + Math.cos(a) * r, 24 + Math.sin(a) * r, 2, 2);
+  }
+  return c;
 }

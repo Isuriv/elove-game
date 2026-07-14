@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ELOVE — Asset Gallery</title>
+  <style>
+    :root { --bg:#140e1c; --pink:#ff7eb9; --cyan:#5ce1e6; --text:#f8f0ff; --muted:#c4b5d8; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 24px; color: var(--text);
+      background: radial-gradient(ellipse at 10% 0%, #3a2458 0%, transparent 45%), var(--bg);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    }
+    h1 { color: var(--pink); }
+    h2 { color: var(--cyan); font-size: 1rem; margin: 28px 0 10px; border-bottom: 1px solid #4a3568; padding-bottom: 6px; }
+    a { color: var(--pink); }
+    .lead { color: var(--cyan); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; }
+    .card {
+      background: #221833; border: 1px solid #4a3568; border-radius: 10px;
+      padding: 10px; text-align: center;
+    }
+    .card img {
+      max-width: 100%; height: 56px; object-fit: contain;
+      image-rendering: pixelated; background: #000; border-radius: 4px;
+    }
+    .card.wide img { height: 72px; width: 100%; object-fit: cover; }
+    .card span { display: block; margin-top: 6px; font-size: 0.68rem; color: var(--muted); word-break: break-all; }
+  </style>
+</head>
+<body>
+  <h1>ELOVE Asset Gallery</h1>
+  <p class="lead">PixelWhale SF pack + MyPixels used in the side-scroller.</p>
+  <p><a href="index.html">← Back to game</a></p>
+
+  <h2>Backgrounds</h2>
+  <div class="grid" id="bgs"></div>
+  <h2>Characters</h2>
+  <div class="grid" id="chars"></div>
+  <h2>Props & objects</h2>
+  <div class="grid" id="props"></div>
+  <h2>Tiles / UI</h2>
+  <div class="grid" id="tiles"></div>
+
+  <script>
+    function add(id, files, wide) {
+      const el = document.getElementById(id);
+      for (const f of files) {
+        const card = document.createElement("div");
+        card.className = "card" + (wide ? " wide" : "");
+        card.innerHTML = `<img src="assets/pixelwhale/ready/${f}" alt=""><span>${f}</span>`;
+        el.appendChild(card);
+      }
+    }
+    add("bgs", [
+      "bg-sky.png","bg-sunset.png","bg-space.png","bg-city.png","bg-clouds.png",
+      "bg-entry1.png","bg-entry2.png","bg-entry3.png","bg-wall.png","bg-stone.png","bg-topcity.png"
+    ], true);
+    add("chars", [
+      "soldier-stand.png","soldier-walk1.png","soldier-walk2.png","soldier-shoot.png",
+      "piskel.png","piskel-clone.png","illustration.png"
+    ]);
+    add("props", Array.from({length:34}, (_,i) => `prop-${String(i+1).padStart(2,"0")}.png`)
+      .concat(["cyber-city.png","cyber-city2.png","fire-planet.png","ice-planet.png"]));
+    add("tiles", [
+      "tileset.png","tile-purple.png","tile-cyan.png","tile-metal.png","ui-frame.png","ui-panel.png","gun-01.png"
+    ]);
+  </script>
+</body>
+</html>

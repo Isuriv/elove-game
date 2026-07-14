@@ -3,25 +3,31 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ELOVE GAME — Lab Escape Demo</title>
+  <title>ELOVE GAME — Side Scroller</title>
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="preload" as="image" href="assets/game/nars-landscape.jpg" />
 </head>
 <body>
   <div id="app">
     <header class="topbar">
       <h1>ELOVE GAME</h1>
-      <p class="tagline">Lab Escape Demo · Planet Nars · HD Pixel 2D</p>
+      <p class="tagline">Nars Canyon · PixelWhale SF · Side Scroller</p>
     </header>
 
     <main id="game-wrap">
-      <!-- Canvas 2D mounts here -->
-
       <div id="title-screen" class="overlay-panel">
         <div class="title-card">
           <h2>ELOVE GAME</h2>
-          <p class="sub">Lab Escape Demo · Planet Nars</p>
-          <p class="hint">Press <kbd>Enter</kbd> or <kbd>J</kbd> / <kbd>Space</kbd> to start</p>
+          <p class="sub">Side Scroller · Planet Nars</p>
+          <p class="hint">Press <kbd>Enter</kbd> or <kbd>J</kbd> to start</p>
           <p id="title-best" class="best"></p>
+          <div id="asset-strip" class="asset-strip hidden" aria-label="Art packs">
+            <img src="assets/imagine/sheets/player-cat-rocket.png" alt="Cat rocket sheet" />
+            <img src="assets/imagine/sheets/enemy-drone.png" alt="Drone sheet" />
+            <img src="assets/imagine/sheets/enemy-cyborg.png" alt="Cyborg sheet" />
+            <img src="assets/imagine/sheets/pickup-blade.png" alt="Blade sheet" />
+          </div>
+          <p class="asset-note">Grok Imagine sprites · neon synthwave</p>
         </div>
       </div>
 
@@ -33,13 +39,13 @@
         </div>
         <div id="eye-timer" class="eye-timer hidden"></div>
         <div id="toast" class="toast hidden"></div>
-        <div id="tutorial" class="tutorial hidden">Follow the glowing markers · press E near props</div>
+        <div id="tutorial" class="tutorial hidden">A/D move · jump · slash hostiles</div>
         <div class="hud-bottom">
           <div class="inv">
-            <span id="inv-key">KEY:—</span>
-            <span id="inv-sword">SWORD:—</span>
-            <span id="inv-pad">PAD:OFF</span>
-            <span id="inv-door" class="danger">DOOR:LOCK</span>
+            <span id="inv-key">FOES:—</span>
+            <span id="inv-sword">BLADE:—</span>
+            <span id="inv-pad">EXIT:LOCK</span>
+            <span id="inv-door" class="hidden"></span>
           </div>
           <div class="obj-row">
             <span class="obj-tag">OBJ</span>
@@ -48,23 +54,14 @@
         </div>
       </div>
 
-      <div id="console-overlay" class="overlay-panel hidden">
-        <div class="console-card">
-          <h3>NARS LAB UPLINK // CRYPTO</h3>
-          <p>THE EYE OPENS THE WAY.</p>
-          <p>THE BUTTON HIDES WHERE</p>
-          <p>LIGHT KISSES THE WALL.</p>
-          <p class="gold">(E to close · look SE of console)</p>
-        </div>
-      </div>
+      <div id="console-overlay" class="overlay-panel hidden"></div>
 
       <div id="end-overlay" class="overlay-panel hidden">
         <div class="end-card">
-          <h2 id="end-title">ESCAPED!</h2>
+          <h2 id="end-title">CLEARED!</h2>
           <p id="end-sub"></p>
           <p id="end-best" class="best"></p>
           <p class="hint">Press <kbd>R</kbd> to run again</p>
-          <p class="muted">Phase4 stubs: infection/god-sabotage/shift — not active</p>
         </div>
       </div>
     </main>
@@ -72,13 +69,14 @@
     <aside class="hud-help" aria-label="Controls">
       <strong>Controls</strong>
       <ul>
-        <li><kbd>WASD</kbd> / <kbd>Arrows</kbd> — Move</li>
-        <li><kbd>J</kbd> / <kbd>Space</kbd> — Slash</li>
-        <li><kbd>E</kbd> — Interact / Grab</li>
-        <li><kbd>F</kbd> — Cute-energy force-warp</li>
-        <li><kbd>R</kbd> — Restart run</li>
-        <li><kbd>M</kbd> — Mute SFX</li>
+        <li><kbd>A</kbd>/<kbd>D</kbd> or arrows — Move</li>
+        <li><kbd>W</kbd> / <kbd>Space</kbd> / <kbd>↑</kbd> — Jump</li>
+        <li><kbd>J</kbd> — Slash</li>
+        <li><kbd>F</kbd> — Force-warp toss</li>
+        <li><kbd>R</kbd> — Restart</li>
+        <li><kbd>M</kbd> — Mute</li>
       </ul>
+      <p style="margin:12px 0 0;font-size:0.8rem"><a href="gallery.html" style="color:var(--cyan)">Asset gallery →</a></p>
     </aside>
   </div>
 
