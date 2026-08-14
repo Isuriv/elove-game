@@ -1,16 +1,20 @@
 :root {
-  --bg: #12081c;
-  --panel: #1a1030;
+  --bg: #3a2460;
+  --panel: #5a3c88;
   --pink: #ff2ea6;
+  --pink-soft: #ff6ec7;
   --cyan: #00e8ff;
+  --cyan-soft: #7df9ff;
   --purple: #b388ff;
+  --purple-light: #d6b6ff;
   --gold: #ffe066;
   --ok: #7dffb3;
   --danger: #ff5c8a;
-  --text: #f8f0ff;
-  --muted: #c4b5d8;
+  --text: #fff5fb;
+  --muted: #e0d0f0;
   --cream: #fff5fb;
-  --ink: #1a0a2e;
+  --ink: #3a2458;
+  --sunset: #ffc050;
 }
 
 * {
@@ -20,60 +24,87 @@
 html, body {
   margin: 0;
   min-height: 100%;
+  height: 100%;
   background:
-    radial-gradient(ellipse at 20% 0%, #5a1860 0%, transparent 45%),
-    radial-gradient(ellipse at 80% 100%, #0a4050 0%, transparent 40%),
-    linear-gradient(180deg, #1a0a2e 0%, #12081c 100%);
+    radial-gradient(ellipse at 20% 0%, #c060c8 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, #40a0b8 0%, transparent 45%),
+    linear-gradient(180deg, #6b3d9e 0%, #4a2a70 55%, #3a4878 100%);
   color: var(--text);
   font-family: "Trebuchet MS", "Segoe UI", sans-serif;
 }
 
 #app {
-  max-width: 1100px;
+  max-width: none;
+  width: 100%;
   margin: 0 auto;
-  padding: 16px 16px 32px;
+  padding: 0;
   display: grid;
-  gap: 12px;
+  place-items: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* Float chrome over the stage so the 480x270 canvas can hit x4 HD (1920x1080). */
+.topbar {
+  position: absolute;
+  top: 6px;
+  left: 10px;
+  z-index: 8;
+  pointer-events: none;
+  text-shadow: 0 1px 6px rgba(90, 40, 140, 0.55);
 }
 
 .topbar h1 {
   margin: 0;
-  font-size: 1.6rem;
+  font-size: 1rem;
   letter-spacing: 0.08em;
   color: var(--pink);
   text-shadow: 0 0 18px rgba(255, 126, 185, 0.35);
 }
 
 .tagline {
-  margin: 4px 0 0;
+  margin: 2px 0 0;
   color: var(--cyan);
-  font-size: 0.9rem;
+  font-size: 0.68rem;
 }
 
 #game-wrap {
   position: relative;
-  width: min(100%, 960px);
-  aspect-ratio: 16 / 9;
+  /* JS sets exact integer-scale HD size (content-box); border sits outside */
+  box-sizing: content-box;
+  width: min(100%, 1920px);
   height: auto;
-  min-height: 0;
+  aspect-ratio: 16 / 9;
+  max-width: none;
   margin: 0 auto;
-  background: #0a0614;
-  border: 2px solid #ff2ea6;
+  background: #4a3480;
+  /* Outline/shadow only - must not consume layout px (would block x4 on 1080p). */
+  border: none;
+  outline: 2px solid #ff2ea6;
+  outline-offset: -2px;
   box-shadow:
-    0 0 0 1px #00e8ff44,
-    0 0 24px rgba(255, 46, 166, 0.35),
-    0 12px 40px rgba(0, 0, 0, 0.45);
-  border-radius: 10px;
+    0 0 0 1px #00e8ff55,
+    0 0 28px rgba(255, 110, 199, 0.4),
+    0 12px 36px rgba(58, 36, 88, 0.35);
+  /* Square corners - border-radius can soft-filter the canvas edge on some GPUs */
+  border-radius: 0;
   overflow: hidden;
+  justify-self: center;
+  align-self: center;
 }
 
 #game-wrap canvas,
 #game-wrap canvas.pixel-canvas {
   display: block;
-  width: 100% !important;
-  height: 100% !important;
-  /* Native 480×270 → crisp nearest-neighbor upscale */
+  box-sizing: content-box;
+  /* Exact px sizes come from render2d._resize - never stretch via % */
+  width: auto;
+  height: auto;
+  /* Native 480x270 -> crisp nearest-neighbor upscale to HD (x2/x3/x4) */
   image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
 }
 
@@ -89,7 +120,7 @@ html, body {
   justify-content: center;
   pointer-events: none;
   z-index: 5;
-  background: rgba(20, 12, 32, 0.35);
+  background: rgba(90, 60, 140, 0.22);
 }
 
 .title-card,
@@ -99,10 +130,78 @@ html, body {
   text-align: center;
   padding: 28px 36px;
   border-radius: 12px;
-  background: linear-gradient(160deg, rgba(42, 24, 56, 0.92), rgba(30, 40, 70, 0.88));
-  border: 1px solid rgba(179, 136, 255, 0.35);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
-  max-width: 420px;
+  background: linear-gradient(160deg, rgba(140, 100, 200, 0.78), rgba(100, 120, 190, 0.72));
+  border: 1px solid rgba(214, 182, 255, 0.55);
+  box-shadow: 0 16px 36px rgba(106, 72, 160, 0.22);
+  max-width: 480px;
+}
+
+.end-card.has-clue-note {
+  max-width: 560px;
+  padding-bottom: 22px;
+}
+
+/* Level 4.5 / 5 win - Starship cabin backdrop behind the pieced note */
+.end-card.has-starship-interior {
+  max-width: 600px;
+  background-image:
+    linear-gradient(160deg, rgba(20, 28, 42, 0.72), rgba(40, 52, 72, 0.68)),
+    url("../assets/imagine/moon/moon-starship-interior.png?v=moon-bouncing-20260805");
+  background-size: cover;
+  background-position: center;
+  border-color: rgba(126, 200, 232, 0.55);
+  box-shadow: 0 16px 36px rgba(20, 40, 70, 0.35);
+}
+
+/* Level 5 win - Mars approach after the reunion cinematic */
+.end-card.has-mars-save {
+  background-image:
+    linear-gradient(160deg, rgba(24, 14, 20, 0.7), rgba(60, 28, 20, 0.62)),
+    url("../assets/imagine/starship/starship-mars-approach.png?v=l5-mars-vacation-20260807");
+  border-color: rgba(232, 160, 120, 0.55);
+  box-shadow: 0 16px 36px rgba(60, 24, 16, 0.4);
+}
+
+.end-card.has-mars-save #end-title.win {
+  color: #ffe8a0;
+  text-shadow: 0 0 18px rgba(255, 180, 120, 0.45);
+}
+
+.end-clue-note {
+  position: relative;
+  width: min(100%, 480px);
+  margin: 14px auto 4px;
+  filter: drop-shadow(0 10px 18px rgba(40, 20, 60, 0.45));
+}
+
+.end-clue-note.hidden {
+  display: none;
+}
+
+.end-clue-note img {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  pointer-events: none;
+}
+
+.end-clue-text {
+  position: absolute;
+  inset: 18% 16% 20% 16%;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #3a2a18;
+  font-family: "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
+  font-size: clamp(0.92rem, 2.4vw, 1.12rem);
+  line-height: 1.45;
+  letter-spacing: 0.01em;
+  font-weight: 600;
+  text-shadow: 0 1px 0 rgba(255, 245, 220, 0.55);
+  transform: rotate(-0.6deg);
 }
 
 .title-card h2,
@@ -129,6 +228,73 @@ html, body {
   color: var(--gold);
   margin-top: 10px;
   min-height: 1.2em;
+}
+
+.level-select {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 0 0 14px;
+  pointer-events: auto;
+}
+
+.level-btn {
+  pointer-events: auto;
+  cursor: pointer;
+  min-width: 132px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(214, 182, 255, 0.45);
+  background: rgba(74, 52, 128, 0.55);
+  color: var(--cream);
+  font: inherit;
+  text-align: left;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.12s;
+}
+
+.level-btn:hover:not(:disabled) {
+  border-color: var(--cyan);
+  transform: translateY(-1px);
+}
+
+.level-btn.selected {
+  border-color: var(--pink);
+  box-shadow: 0 0 0 1px rgba(255, 46, 166, 0.45), 0 0 18px rgba(255, 110, 199, 0.25);
+  background: linear-gradient(160deg, rgba(160, 80, 160, 0.75), rgba(80, 100, 160, 0.7));
+}
+
+.level-btn.locked {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.level-btn .lvl-num {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  color: var(--cyan);
+}
+
+.level-btn .lvl-name {
+  display: block;
+  font-weight: 700;
+  margin-top: 2px;
+  color: var(--pink-soft);
+}
+
+.level-btn .lvl-best {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.72rem;
+  color: var(--gold);
+  min-height: 1em;
+}
+
+.title-toast {
+  margin: 8px 0 0;
+  color: var(--gold);
+  font-size: 0.85rem;
 }
 
 .console-card {
@@ -159,7 +325,7 @@ html, body {
 .end-card .muted {
   margin-top: 16px;
   font-size: 0.7rem;
-  color: #8870a0;
+  color: #c4a8e0;
 }
 
 .asset-strip {
@@ -170,19 +336,20 @@ html, body {
   align-items: center;
   margin: 16px 0 6px;
   padding: 10px 12px;
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(74, 52, 128, 0.45);
   border-radius: 8px;
-  border: 1px solid rgba(92, 225, 230, 0.25);
+  border: 1px solid rgba(125, 249, 255, 0.3);
 }
 
 .asset-strip img {
-  height: 36px;
+  /* 360px sheet cells preview at /4 = 90 CSS px (integer) */
+  height: 90px;
   width: auto;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  background: #000;
-  border-radius: 4px;
-  padding: 2px;
+  background: #4a3480;
+  border-radius: 0;
+  padding: 0;
 }
 
 .asset-note {
@@ -207,10 +374,10 @@ html, body {
   align-items: center;
   gap: 16px;
   padding: 10px 14px;
-  background: linear-gradient(180deg, rgba(42, 24, 56, 0.9), rgba(42, 24, 56, 0.2) 70%, transparent);
+  background: linear-gradient(180deg, rgba(90, 60, 140, 0.82), rgba(90, 60, 140, 0.15) 70%, transparent);
   font-size: 0.85rem;
   letter-spacing: 0.04em;
-  border-bottom: 1px solid rgba(179, 136, 255, 0.12);
+  border-bottom: 1px solid rgba(214, 182, 255, 0.22);
 }
 
 #hud-time {
@@ -235,8 +402,8 @@ html, body {
   width: 12px;
   height: 12px;
   border-radius: 2px;
-  background: #5a4068;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+  background: #8a70b0;
+  box-shadow: inset 0 0 0 1px rgba(58, 36, 88, 0.25);
 }
 .heart.on {
   background: var(--pink);
@@ -248,12 +415,12 @@ html, body {
   margin-top: 8px;
   padding: 7px 18px;
   border-radius: 8px;
-  background: linear-gradient(135deg, rgba(42, 24, 56, 0.92), rgba(30, 50, 70, 0.88));
+  background: linear-gradient(135deg, rgba(90, 60, 140, 0.9), rgba(50, 100, 130, 0.86));
   color: var(--cyan);
   font-weight: 700;
   letter-spacing: 0.08em;
-  border: 1px solid rgba(92, 225, 230, 0.35);
-  box-shadow: 0 0 16px rgba(92, 225, 230, 0.15);
+  border: 1px solid rgba(125, 249, 255, 0.4);
+  box-shadow: 0 0 16px rgba(0, 232, 255, 0.2);
 }
 .eye-timer.urgent {
   color: var(--danger);
@@ -273,7 +440,7 @@ html, body {
   max-width: 90%;
   padding: 8px 18px;
   border-radius: 8px;
-  background: rgba(42, 24, 56, 0.9);
+  background: rgba(90, 60, 140, 0.88);
   color: var(--cream);
   font-size: 0.9rem;
   text-align: center;
@@ -289,7 +456,7 @@ html, body {
 
 .hud-bottom {
   padding: 10px 14px 12px;
-  background: linear-gradient(0deg, rgba(42, 24, 56, 0.92), transparent);
+  background: linear-gradient(0deg, rgba(90, 60, 140, 0.88), transparent);
 }
 
 .inv {
@@ -298,7 +465,7 @@ html, body {
   gap: 12px;
   font-size: 0.75rem;
   letter-spacing: 0.04em;
-  color: #8870a0;
+  color: #c4a8e0;
   margin-bottom: 8px;
 }
 
@@ -314,9 +481,9 @@ html, body {
   gap: 10px;
   padding: 8px 14px;
   border-radius: 8px;
-  background: linear-gradient(90deg, rgba(42, 24, 56, 0.88), rgba(30, 40, 70, 0.7));
-  border: 1px solid rgba(179, 136, 255, 0.28);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(90deg, rgba(90, 60, 140, 0.86), rgba(60, 80, 140, 0.72));
+  border: 1px solid rgba(214, 182, 255, 0.35);
+  box-shadow: 0 4px 16px rgba(58, 36, 88, 0.2);
 }
 
 .obj-tag {
@@ -337,12 +504,20 @@ html, body {
 }
 
 .hud-help {
-  background: rgba(42, 31, 61, 0.85);
-  border: 1px solid #4a3568;
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 8;
+  background: rgba(90, 60, 140, 0.86);
+  border: 1px solid #b388ff;
   border-radius: 8px;
-  padding: 12px 16px;
+  padding: 4px 10px;
   color: var(--muted);
-  font-size: 0.88rem;
+  font-size: 0.68rem;
+  max-width: min(96vw, 1920px);
+  width: auto;
+  pointer-events: auto;
 }
 
 .hud-help strong {
@@ -350,20 +525,29 @@ html, body {
 }
 
 .hud-help ul {
-  margin: 8px 0 0;
-  padding-left: 18px;
+  margin: 6px 0 0;
+  padding-left: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
 }
 
 .hud-help li {
-  margin: 4px 0;
+  margin: 0;
+}
+
+.hud-help p {
+  margin: 6px 0 0 !important;
+  font-size: 0.75rem !important;
 }
 
 kbd {
   display: inline-block;
   padding: 1px 6px;
   border-radius: 4px;
-  background: #3d2f55;
-  border: 1px solid #6a5488;
+  background: #6a52a0;
+  border: 1px solid #d6b6ff;
   color: var(--text);
   font-size: 0.8em;
 }

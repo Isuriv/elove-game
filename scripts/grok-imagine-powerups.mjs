@@ -40,6 +40,11 @@ const ITEMS = [
     prompt:
       "Game sprite, solid pure black background #000000, vertical pixel art hanging cyberpunk cable wire dangling down, frayed tip, neon magenta cyan accents on dark cable, chunky pixels, no text, suitable as a platform decoration",
   },
+  {
+    file: "toffee.png",
+    prompt:
+      "Game sprite collectible, solid pure black background #000000 ONLY (no white, no gray, no checkerboard, no shadow, no ground), chunky cute pixel art wrapped toffee candy pickup, caramel orange center with pink twisted wrapper ends, soft yellow highlight, clean silhouette, centered, no text no HUD",
+  },
 ];
 
 async function generateOne(apiKey, item) {
@@ -74,14 +79,21 @@ async function main() {
   const apiKey = process.env.XAI_API_KEY;
   if (!apiKey) {
     console.error("Missing XAI_API_KEY");
+    console.error('  $env:XAI_API_KEY = "xai-..."');
+    console.error("  npm run imagine:powerups -- toffee");
     process.exit(1);
   }
   await fs.mkdir(OUT, { recursive: true });
-  for (const item of ITEMS) {
+  const only = process.argv.slice(2);
+  const queue = only.length
+    ? ITEMS.filter((i) => only.some((a) => i.file.includes(a)))
+    : ITEMS;
+  console.log(`Using model ${MODEL}`);
+  for (const item of queue) {
     process.stdout.write(`${item.file}... `);
     try {
       const p = await generateOne(apiKey, item);
-      console.log(`ok → ${path.relative(ROOT, p)}`);
+      console.log(`ok -> ${path.relative(ROOT, p)}`);
     } catch (e) {
       console.log("FAIL");
       console.error(e.message || e);

@@ -1,7 +1,7 @@
 /* Time-based sprite animation helpers (pixel-art hold timings). */
 /**
  * Recommended holds (ms) from pixel-art guides:
- * idle 400–500, walk 100–150 (~8–12fps), float/fly ~150, attack wind-up slow / impact snap.
+ * idle 400-500, walk 100-150 (~8-12fps), float/fly ~150, attack wind-up slow / impact snap.
  * Refs: sprite-ai.art animation guides, pixnote.net learn/animation
  */
 

@@ -1,45 +1,44 @@
-# ELOVE GAME — Lab Escape Demo
+# ELOVE GAME
 
-True **2D top-down HD-pixel** action-puzzle demo (vanilla Canvas 2D), following the game-only [Implementation Plan: ELOVE GAME](https://app.notion.com/p/399c98a9f7ff810585f8d820c1ef51f6).
+> **Cross-chat context:** See [`CHAT-HANDOFF.md`](./CHAT-HANDOFF.md) for the current side-scroller state, asset paths, decisions, and how to load this into a new Cursor conversation. Also searchable via MCP `user-rag-context-memory` -> `search_chat_history` ("Mars Love Blastar elove-game").
 
-You play a cat-girl Meow Hybrid waking in a cracked lab pod on Planet Nars: explore, slash cyborgs, solve a timed eye-key door puzzle, find a cryptic console’s hidden button, and escape.
+Playable **2D Canvas side-scroller** (synthwave / Planet Nars). Native framebuffer **480x270**, integer nearest-neighbor upscale.
 
 ## How to run
 
-A local static server is **required** (ES modules):
-
-```bash
-cd /Users/isurividyarathne/Projects/elove-game
-python3 -m http.server 8080
+```powershell
+Set-Location "C:\Users\ethra\Documents\Elove\Mars Love Blastar\elove-game"
+python -m http.server 8081
 ```
 
-Then visit [http://localhost:8080](http://localhost:8080) and hard-refresh (`Cmd+Shift+R` / `Ctrl+Shift+R`).
-
-Works fully offline — no CDN / Three.js dependency.
+Open http://localhost:8081/ and hard-refresh (`Ctrl+Shift+R`).
 
 ## Controls
 
 | Key | Action |
 |-----|--------|
-| WASD / Arrows | Move (polled each frame; cleared on blur) |
-| J / Space | Slash |
-| E | Interact / grab / console / door |
-| F | Cute-energy force-warp (toss cyborgs) |
-| R | Restart run |
-| M | Mute SFX |
-| Enter | Start (title screen) |
+| A/D or arrows | Move |
+| W / Space / Up | Jump |
+| J | Slash |
+| F | Force-warp toss |
+| R | Restart |
+| M | Mute |
+| Enter | Start (title) |
 
-## Objective loop
+## Objective
 
-On-screen **OBJ** text updates as you progress. Glowing markers + labels highlight the pod, closet, marked cyborg, door, console, hidden button, and exit.
+Clear drones & cyborgs, stay off the **toxic fluid** floor, reach **EXIT**.
 
-1. Wake in the cracked pod (west room) — brief tutorial toast after Enter
-2. **Grab the sword** from the glowing closet (optional but strong)
-3. **Defeat the marked cyborg** (cyan “KEY!” marker) — drops an **eye-key**
-4. **Use the eye-key on the east door** before the timer burns out
-5. Read the **console** (north) → find the **hidden pink button** SE of it
+For full architecture, art pipeline, and prior chat decisions -> **[CHAT-HANDOFF.md](./CHAT-HANDOFF.md)**.
+
+---
+
+## Legacy note
+
+Older README content described a top-down lab-escape demo and/or Three.js blaster. Archives live under `archive/`. Current live game is the side-scroller above.
+
 6. Step on the **green EXIT pad** beyond the door to win
-7. Beat your **localStorage** best time — press **R** to instantly retry
+7. Beat your **localStorage** best time - press **R** to instantly retry
 
 ## Project layout
 

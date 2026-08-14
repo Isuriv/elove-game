@@ -1,42 +1,476 @@
 {
-  "generatedAt": "2026-07-14T00:35:17.348Z",
-  "source": "grok-video",
+  "generatedAt": "rocket-boss-20260724",
+  "source": "grok-video-per-anim-clean",
+  "playerPipeline": {
+    "mode": "per-anim-clean",
+    "pixelate": false,
+    "cell": 256,
+    "sizeNote": "Pack player into same world box as drone (DRONE_TARGET)."
+  },
+  "enemyPipeline": {
+    "mode": "per-anim-clean",
+    "pixelate": false,
+    "cell": 256,
+    "sizeNote": "Keep DRONE_TARGET / SOLDIER_TARGET footprints in assets.js."
+  },
   "sheets": {
     "player-cat-rocket": {
       "file": "player-cat-rocket.png",
-      "cols": 8,
+      "cols": 17,
       "rows": 1,
-      "cell": 128,
+      "cell": 256,
       "anims": {
         "idle": [
           0,
-          1
+          1,
+          2,
+          3
         ],
         "fly": [
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "slash": [
+          10,
+          11,
+          12,
+          13
+        ],
+        "hurt": [
+          14,
+          15,
+          16
+        ]
+      },
+      "holdMs": {
+        "idle": 480,
+        "fly": 160,
+        "slash": [
+          180,
+          120,
+          90,
+          160
+        ],
+        "hurt": 140
+      },
+      "source": "grok-video-per-anim-clean",
+      "pixelate": false,
+      "framesDir": "assets/imagine/frames/video/player-cat-rocket",
+      "perAnimSheets": {
+        "idle": {
+          "file": "player-cat-rocket-idle.png",
+          "cols": 4,
+          "rows": 1,
+          "cell": 256,
+          "video": "assets/imagine/video/player-anims/idle-edited.mp4"
+        },
+        "fly": {
+          "file": "player-cat-rocket-fly.png",
+          "cols": 6,
+          "rows": 1,
+          "cell": 256,
+          "video": "assets/imagine/video/player-anims/fly-edited.mp4"
+        },
+        "slash": {
+          "file": "player-cat-rocket-slash.png",
+          "cols": 4,
+          "rows": 1,
+          "cell": 256,
+          "video": "assets/imagine/video/player-anims/slash-edited.mp4"
+        },
+        "hurt": {
+          "file": "player-cat-rocket-hurt.png",
+          "cols": 3,
+          "rows": 1,
+          "cell": 256,
+          "video": "assets/imagine/video/player-anims/hurt-edited.mp4"
+        }
+      },
+      "videos": {
+        "idle": "assets/imagine/video/player-anims/idle-edited.mp4",
+        "fly": "assets/imagine/video/player-anims/fly-edited.mp4",
+        "slash": "assets/imagine/video/player-anims/slash-edited.mp4",
+        "hurt": "assets/imagine/video/player-anims/hurt-edited.mp4"
+      }
+    },
+    "enemy-drone": {
+      "file": "enemy-drone.png",
+      "cols": 9,
+      "rows": 1,
+      "cell": 256,
+      "anims": {
+        "fly": [
+          0,
+          1,
           2,
           3,
           4,
           5
         ],
-        "slash": [
-          6,
-          7
-        ],
         "hurt": [
-          0
+          6,
+          7,
+          8
         ]
       },
       "holdMs": {
-        "idle": 480,
         "fly": 180,
-        "slash": [
-          180,
-          140
-        ],
-        "hurt": 140
+        "hurt": 120
       },
-      "source": "grok-video-chibi",
-      "video": "assets/imagine/video/player-cat-rocket-edited.mp4"
+      "source": "grok-video-per-anim-clean",
+      "pixelate": false,
+      "framesDir": "assets/imagine/frames/video/enemy-drone",
+      "perAnimSheets": {
+        "fly": {
+          "file": "enemy-drone-fly.png",
+          "cols": 6,
+          "rows": 1,
+          "cell": 256,
+          "video": "assets/imagine/video/drone-anims/fly-edited.mp4"
+        },
+        "hurt": {
+          "file": "enemy-drone-hurt.png",
+          "cols": 3,
+          "rows": 1,
+          "cell": 256,
+          "video": "assets/imagine/video/drone-anims/hurt-edited.mp4"
+        }
+      },
+      "videos": {
+        "fly": "assets/imagine/video/drone-anims/fly-edited.mp4",
+        "hurt": "assets/imagine/video/drone-anims/hurt-edited.mp4"
+      }
+    },
+    "enemy-cyborg": {
+      "file": "enemy-cyborg.png",
+      "cols": 17,
+      "rows": 1,
+      "cell": 256,
+      "anims": {
+        "idle": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "walk": [
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "attack": [
+          10,
+          11,
+          12,
+          13
+        ],
+        "hurt": [
+          14,
+          15,
+          16
+        ]
+      },
+      "holdMs": {
+        "idle": 450,
+        "walk": 140,
+        "attack": [
+          160,
+          100,
+          55,
+          150
+        ],
+        "hurt": 120
+      },
+      "source": "grok-video-per-anim-clean",
+      "pixelate": false,
+      "framesDir": "assets/imagine/frames/video/enemy-cyborg",
+      "perAnimSheets": {
+        "idle": {
+          "file": "enemy-cyborg-idle.png",
+          "cols": 4,
+          "rows": 1,
+          "cell": 256,
+          "video": "assets/imagine/video/cyborg-anims/idle-edited.mp4"
+        },
+        "walk": {
+          "file": "enemy-cyborg-walk.png",
+          "cols": 6,
+          "rows": 1,
+          "cell": 256,
+          "video": "assets/imagine/video/cyborg-anims/walk-edited.mp4"
+        },
+        "attack": {
+          "file": "enemy-cyborg-attack.png",
+          "cols": 4,
+          "rows": 1,
+          "cell": 256,
+          "video": "assets/imagine/video/cyborg-anims/attack-edited.mp4"
+        },
+        "hurt": {
+          "file": "enemy-cyborg-hurt.png",
+          "cols": 3,
+          "rows": 1,
+          "cell": 256,
+          "video": "assets/imagine/video/cyborg-anims/hurt-edited.mp4"
+        }
+      },
+      "videos": {
+        "idle": "assets/imagine/video/cyborg-anims/idle-edited.mp4",
+        "walk": "assets/imagine/video/cyborg-anims/walk-edited.mp4",
+        "attack": "assets/imagine/video/cyborg-anims/attack-edited.mp4",
+        "hurt": "assets/imagine/video/cyborg-anims/hurt-edited.mp4"
+      }
+    },
+    "pickup-blade": {
+      "file": "pickup-blade.png",
+      "cols": 10,
+      "rows": 1,
+      "cell": 360,
+      "anims": {
+        "spin": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ]
+      },
+      "holdMs": {
+        "spin": 130
+      },
+      "source": "grok-video-frames-360",
+      "framesDir": "assets/imagine/frames/video/pickup-blade"
+    },
+    "enemy-optimus": {
+      "file": "enemy-optimus.png",
+      "cols": 17,
+      "rows": 1,
+      "cell": 256,
+      "anims": {
+        "idle": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "walk": [
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "attack": [
+          10,
+          11,
+          12,
+          13
+        ],
+        "hurt": [
+          14,
+          15,
+          16
+        ]
+      },
+      "holdMs": {
+        "idle": 450,
+        "walk": 140,
+        "attack": [
+          160,
+          100,
+          55,
+          150
+        ],
+        "hurt": 120
+      },
+      "source": "imagine-keyframes-pack-clean",
+      "pixelate": false,
+      "framesDir": "assets/imagine/frames/video/enemy-optimus",
+      "perAnimSheets": {
+        "idle": {
+          "file": "enemy-optimus-idle.png",
+          "cols": 4,
+          "rows": 1,
+          "cell": 256
+        },
+        "walk": {
+          "file": "enemy-optimus-walk.png",
+          "cols": 6,
+          "rows": 1,
+          "cell": 256
+        },
+        "attack": {
+          "file": "enemy-optimus-attack.png",
+          "cols": 4,
+          "rows": 1,
+          "cell": 256
+        },
+        "hurt": {
+          "file": "enemy-optimus-hurt.png",
+          "cols": 3,
+          "rows": 1,
+          "cell": 256
+        }
+      }
+    },
+    "enemy-carbot": {
+      "file": "enemy-carbot.png",
+      "cols": 17,
+      "rows": 1,
+      "cell": 256,
+      "anims": {
+        "idle": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "walk": [
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "attack": [
+          10,
+          11,
+          12,
+          13
+        ],
+        "hurt": [
+          14,
+          15,
+          16
+        ]
+      },
+      "holdMs": {
+        "idle": 420,
+        "walk": 120,
+        "attack": [
+          180,
+          90,
+          70,
+          160
+        ],
+        "hurt": 110
+      },
+      "source": "imagine-keyframes-pack-clean",
+      "pixelate": false,
+      "framesDir": "assets/imagine/frames/video/enemy-carbot",
+      "perAnimSheets": {
+        "idle": {
+          "file": "enemy-carbot-idle.png",
+          "cols": 4,
+          "rows": 1,
+          "cell": 256
+        },
+        "walk": {
+          "file": "enemy-carbot-walk.png",
+          "cols": 6,
+          "rows": 1,
+          "cell": 256
+        },
+        "attack": {
+          "file": "enemy-carbot-attack.png",
+          "cols": 4,
+          "rows": 1,
+          "cell": 256
+        },
+        "hurt": {
+          "file": "enemy-carbot-hurt.png",
+          "cols": 3,
+          "rows": 1,
+          "cell": 256
+        }
+      }
+    },
+    "enemy-rocket": {
+      "file": "enemy-rocket.png",
+      "cols": 17,
+      "rows": 1,
+      "cell": 256,
+      "anims": {
+        "idle": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "walk": [
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "attack": [
+          10,
+          11,
+          12,
+          13
+        ],
+        "hurt": [
+          14,
+          15,
+          16
+        ]
+      },
+      "holdMs": {
+        "idle": 420,
+        "walk": 120,
+        "attack": [
+          180,
+          90,
+          70,
+          160
+        ],
+        "hurt": 110
+      },
+      "source": "imagine-keyframes-pack-clean",
+      "pixelate": false,
+      "framesDir": "assets/imagine/frames/video/enemy-rocket",
+      "perAnimSheets": {
+        "idle": {
+          "file": "enemy-rocket-idle.png",
+          "cols": 4,
+          "rows": 1,
+          "cell": 256
+        },
+        "walk": {
+          "file": "enemy-rocket-walk.png",
+          "cols": 6,
+          "rows": 1,
+          "cell": 256
+        },
+        "attack": {
+          "file": "enemy-rocket-attack.png",
+          "cols": 4,
+          "rows": 1,
+          "cell": 256
+        },
+        "hurt": {
+          "file": "enemy-rocket-hurt.png",
+          "cols": 3,
+          "rows": 1,
+          "cell": 256
+        }
+      }
     }
   }
 }

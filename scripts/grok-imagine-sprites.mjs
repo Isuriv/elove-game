@@ -155,7 +155,7 @@ async function main() {
     process.stdout.write(`Generating ${item.file}... `);
     try {
       const out = await generateOne(apiKey, item);
-      console.log(`ok → ${path.relative(ROOT, out)}`);
+      console.log(`ok -> ${path.relative(ROOT, out)}`);
     } catch (err) {
       console.log("FAIL");
       console.error(err.message || err);

@@ -1,5 +1,5 @@
 /**
- * Resize sprite PNGs to a shared 128×128 resolution (nearest-neighbor fit + pad).
+ * Resize sprite PNGs to a shared 128x128 resolution (nearest-neighbor fit + pad).
  *
  * Usage:
  *   node scripts/resize-assets-128.mjs
@@ -73,7 +73,7 @@ async function main() {
   }
 
   await browser.close();
-  console.log(`Resized ${files.length} PNGs → ${SIZE}×${SIZE}`);
+  console.log(`Resized ${files.length} PNGs -> ${SIZE}x${SIZE}`);
 }
 
 main().catch((e) => {

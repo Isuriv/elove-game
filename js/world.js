@@ -1,5 +1,5 @@
 /* Side-scroller platform map + collision */
-import { CFG, TILE } from "./config.js";
+import { CFG, TILE, isPlatformTile } from "./config.js";
 
 export const World = (() => {
   const W = 96;
@@ -19,29 +19,30 @@ export const World = (() => {
       m.push(row);
     }
 
+    // [tx, ty, length, tileType] - mixed mechanics across the run
+    // Gaps 2-4 tiles / 32-64px; ups <= +3 tiles for JUMP_VY ~ -6.0
     const plats = [
-      [6, 10, 5],
-      [14, 8, 4],
-      [22, 9, 6],
-      [30, 7, 4],
-      [38, 9, 5],
-      [46, 6, 4],
-      [54, 8, 6],
-      [64, 7, 5],
-      [72, 9, 4],
-      [80, 8, 5],
+      [6, 10, 5, TILE.PLATFORM],
+      [14, 8, 4, TILE.PLAT_SLIP],
+      [22, 9, 6, TILE.PLATFORM],
+      [30, 7, 4, TILE.PLAT_BOUNCE],
+      [38, 9, 5, TILE.PLAT_SLIP],
+      [46, 6, 4, TILE.PLATFORM],
+      [54, 8, 6, TILE.PLAT_BOUNCE],
+      [64, 7, 5, TILE.PLAT_SLIP],
+      [72, 9, 4, TILE.PLATFORM],
+      [80, 8, 5, TILE.PLAT_BOUNCE],
     ];
-    for (const [px, py, len] of plats) {
+    for (const [px, py, len, kind] of plats) {
       for (let i = 0; i < len; i++) {
         if (px + i > 0 && px + i < W - 1 && py > 0 && py < H - 2) {
-          m[py][px + i] = TILE.PLATFORM;
+          m[py][px + i] = kind;
         }
       }
     }
 
     for (const gap of [
       [28, 30],
-      [50, 52],
       [70, 72],
     ]) {
       for (let x = gap[0]; x <= gap[1]; x++) {
@@ -71,19 +72,35 @@ export const World = (() => {
     return map[ty][tx];
   }
 
-  function rectHitsSolid(left, top, right, bottom, vy = 0) {
+  /**
+   * Mario one-way pads: solid only while falling through the lip from above.
+   * Swept test (prevBottom -> bottom) covers fast falls up to MAX_FALL without a
+   * separate "in band" catch, which falsely grounded players rising through from below.
+   */
+  function platformLipHit(tileTop, bottom, prevBottom) {
+    return (
+      prevBottom != null &&
+      prevBottom <= tileTop + 0.01 &&
+      bottom >= tileTop
+    );
+  }
+
+  function rectHitsSolid(left, top, right, bottom, vy = 0, prevBottom = null) {
     const x0 = Math.floor(left / CFG.TILE);
     const x1 = Math.floor(right / CFG.TILE);
+    // Include platform rows the feet swept through this step (thin pad tunneling).
     const y0 = Math.floor(top / CFG.TILE);
     const y1 = Math.floor(bottom / CFG.TILE);
-    for (let ty = y0; ty <= y1; ty++) {
+    const sweepY0 =
+      prevBottom != null && vy > 0
+        ? Math.min(y0, Math.floor(prevBottom / CFG.TILE))
+        : y0;
+    for (let ty = sweepY0; ty <= y1; ty++) {
       for (let tx = x0; tx <= x1; tx++) {
         const t = get(tx, ty);
         if (t === TILE.SOLID) return true;
-        if (t === TILE.PLATFORM && vy >= 0) {
-          const tileTop = ty * CFG.TILE;
-          // Only when crossing onto the platform from above
-          if (bottom >= tileTop && bottom <= tileTop + 5 && top < tileTop) return true;
+        if (isPlatformTile(t) && vy > 0 && platformLipHit(ty * CFG.TILE, bottom, prevBottom)) {
+          return true;
         }
       }
     }
@@ -94,12 +111,10 @@ export const World = (() => {
     let x = px;
     let y = py;
 
-    // Horizontal
+    // Horizontal - one-way pads are never walls (vy=0 ignores platforms)
     if (dx !== 0) {
       const nx = x + dx;
-      if (
-        !rectHitsSolid(nx - hw, y - hh, nx + hw, y + hh, 0)
-      ) {
+      if (!rectHitsSolid(nx - hw, y - hh, nx + hw, y + hh, 0)) {
         x = nx;
       }
     }
@@ -107,13 +122,35 @@ export const World = (() => {
     // Vertical
     if (dy !== 0) {
       const ny = y + dy;
-      if (!rectHitsSolid(x - hw, ny - hh, x + hw, ny + hh, dy)) {
+      const prevBottom = y + hh;
+      if (!rectHitsSolid(x - hw, ny - hh, x + hw, ny + hh, dy, prevBottom)) {
         y = ny;
       } else if (dy > 0) {
-        // Snap to floor / platform top
-        const feet = y + hh;
-        const ty = Math.floor((feet + dy) / CFG.TILE);
-        y = ty * CFG.TILE - hh - 0.05;
+        // Snap to highest platform lip crossed this step, else solid floor
+        let snapY = null;
+        const x0 = Math.floor((x - hw) / CFG.TILE);
+        const x1 = Math.floor((x + hw) / CFG.TILE);
+        const feetBottom = ny + hh;
+        const sweepY0 = Math.floor(Math.min(prevBottom, feetBottom) / CFG.TILE);
+        const sweepY1 = Math.floor(Math.max(prevBottom, feetBottom) / CFG.TILE);
+        for (let ty = sweepY0; ty <= sweepY1; ty++) {
+          for (let tx = x0; tx <= x1; tx++) {
+            const t = get(tx, ty);
+            if (!isPlatformTile(t)) continue;
+            const tileTop = ty * CFG.TILE;
+            if (platformLipHit(tileTop, feetBottom, prevBottom)) {
+              const lip = tileTop - hh - 0.05;
+              if (snapY == null || lip < snapY) snapY = lip;
+            }
+          }
+        }
+        if (snapY != null) {
+          y = snapY;
+        } else {
+          const feet = y + hh;
+          const ty = Math.floor((feet + dy) / CFG.TILE);
+          y = ty * CFG.TILE - hh - 0.05;
+        }
       } else {
         // Hit ceiling
         const head = y - hh + dy;
@@ -126,7 +163,28 @@ export const World = (() => {
   }
 
   function onGround(px, py, hw = 6, hh = 8) {
-    return rectHitsSolid(px - hw, py - hh + 1, px + hw, py + hh + 1.5, 1);
+    // Pass current feet as prevBottom so one-way pads only count when standing on
+    // (or micro-stepping onto) the lip - not while embedded rising from below.
+    const feet = py + hh;
+    return rectHitsSolid(px - hw, py - hh + 1, px + hw, py + hh + 1.5, 1, feet);
+  }
+
+  /** Tile type supporting the player's feet (platform or solid), else EMPTY. */
+  function surfaceUnder(px, py, hw = 6, hh = 8) {
+    const left = px - hw;
+    const right = px + hw;
+    const feet = py + hh;
+    const bottom = feet + 1.5;
+    const x0 = Math.floor(left / CFG.TILE);
+    const x1 = Math.floor(right / CFG.TILE);
+    const ty = Math.floor(bottom / CFG.TILE);
+    let best = TILE.EMPTY;
+    for (let tx = x0; tx <= x1; tx++) {
+      const t = get(tx, ty);
+      if (t === TILE.SOLID) return TILE.SOLID;
+      if (isPlatformTile(t) && platformLipHit(ty * CFG.TILE, bottom, feet)) best = t;
+    }
+    return best;
   }
 
   function worldToTile(x, y) {
@@ -153,6 +211,7 @@ export const World = (() => {
     get,
     tryMove,
     onGround,
+    surfaceUnder,
     worldToTile,
     spawnPoint,
     exitRect,

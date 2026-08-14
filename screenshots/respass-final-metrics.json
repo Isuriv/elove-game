@@ -1,0 +1,37 @@
+{
+  "info": {
+    "targets": {
+      "d": [
+        104,
+        66
+      ],
+      "c": [
+        88,
+        102
+      ],
+      "b": [
+        28,
+        68
+      ],
+      "p": [
+        72,
+        96
+      ]
+    },
+    "sizes": {
+      "player": "72x96",
+      "drone": "104x66",
+      "cyborg": "88x102",
+      "blade": "28x68"
+    },
+    "cars": 4,
+    "outline": true
+  },
+  "metrics": {
+    "buffer": "480x270",
+    "css": "960pxx540px",
+    "scale": 2,
+    "integer": true,
+    "imageRendering": "crisp-edges"
+  }
+}

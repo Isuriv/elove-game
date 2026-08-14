@@ -1,4 +1,4 @@
-/* Phase 4 system stubs — APIs ready, not active in demo */
+/* Phase 4 system stubs - APIs ready, not active in demo */
 export const Phase4 = {
   infection: {
     enabled: false,

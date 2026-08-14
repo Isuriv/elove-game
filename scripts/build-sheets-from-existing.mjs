@@ -153,22 +153,22 @@ async function main() {
     console.log("player-cat-rocket sheet ok");
   }
 
-  // Drone
+  // Drone (fly + hurt only - no attack sheet cells)
   const droneSrc = await pick(path.join(IM, "enemy-drone.png"), path.join(GAME, "enemydrone.png"));
   if (droneSrc) {
-    const frames = await makeVariants(droneSrc, 4, FRAMES, "drone-placeholder");
+    const frames = await makeVariants(droneSrc, 3, FRAMES, "drone-placeholder");
     await stitch(frames, path.join(SHEETS, "enemy-drone.png"));
     manifest.sheets["enemy-drone"] = {
       file: "enemy-drone.png",
-      cols: 4,
+      cols: 3,
       rows: 1,
       cell: 128,
-      anims: { fly: [0, 1, 2], attack: [3], hurt: [1] },
+      anims: { fly: [0, 1, 2], hurt: [1] },
     };
     console.log("enemy-drone sheet ok");
   }
 
-  // Cyborg — use real distinct frames when present
+  // Cyborg - use real distinct frames when present
   const cyFrames = [];
   for (const name of [
     "enemy-cyborg-idle.png",

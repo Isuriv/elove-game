@@ -1,0 +1,27 @@
+{
+  "metrics": {
+    "bufferW": 480,
+    "bufferH": 270,
+    "cssW": 960,
+    "cssH": 540,
+    "wrapContentW": 960,
+    "wrapContentH": 540,
+    "wrapClientW": 960,
+    "wrapClientH": 540,
+    "wrapRectW": 964,
+    "imageRendering": "crisp-edges",
+    "scaleX": 2,
+    "integerScale": true,
+    "dpr": 1
+  },
+  "artInfo": {
+    "ready": false,
+    "playerBox": null,
+    "droneBox": null,
+    "cyborgBox": null,
+    "hasCars": false,
+    "carCount": 0,
+    "hasMountains": false,
+    "opaqueEdgeSample": 0
+  }
+}

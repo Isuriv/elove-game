@@ -1,0 +1,60 @@
+{
+  "sheet": "1024x128",
+  "frame": "480x480",
+  "cellTrim": {
+    "tw": 54,
+    "th": 77,
+    "minX": 37,
+    "minY": 27,
+    "maxX": 90,
+    "maxY": 103
+  },
+  "cellBlock": {
+    "modeRun": 3,
+    "runsSample": [
+      2,
+      2,
+      2,
+      3,
+      3,
+      3,
+      3,
+      6,
+      11,
+      48
+    ],
+    "freq": {
+      "2": 3,
+      "3": 4,
+      "6": 1,
+      "11": 1
+    }
+  },
+  "frameTrim": {
+    "tw": 200,
+    "th": 290,
+    "minX": 140,
+    "minY": 100,
+    "maxX": 339,
+    "maxY": 389
+  },
+  "frBlock": {
+    "modeRun": 10,
+    "runsSample": [
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      20,
+      40,
+      180
+    ],
+    "freq": {
+      "10": 7
+    }
+  },
+  "packScaleFromSheetCell": 0.5064935064935064
+}

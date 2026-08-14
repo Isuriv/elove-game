@@ -1,4 +1,4 @@
-/* Procedural HD-pixel sprites — nearest-neighbor friendly */
+/* Procedural HD-pixel sprites - nearest-neighbor friendly */
 import { CFG } from "./config.js";
 
 const C = CFG.COLORS;
@@ -82,9 +82,9 @@ function fillPx(ctx, x, y, w, h, color) {
   ctx.fillRect(x, y, w, h);
 }
 
-/** Detailed floor / wall / prop tiles at 32×32 (HD pixel). */
+/** Detailed floor / wall / prop tiles at 32x32 (HD pixel). */
 export function makeTiles() {
-  const S = 32; // 2× logical tile for crisp HD pixels
+  const S = 32; // 2x logical tile for crisp HD pixels
   const tiles = {};
 
   tiles.floor = tileCanvas((ctx) => {
@@ -342,7 +342,7 @@ export function makeTiles() {
   return tiles;
 }
 
-/** Cat-girl Meow Hybrid — reference-matched HD pixel (¾ top-down). */
+/** Cat-girl Meow Hybrid - reference-matched HD pixel (3/4 top-down). */
 export function makePlayerFrames() {
   const frames = { idle: [], walk: [], slash: [], hurt: [], success: [] };
   const px = 2;

@@ -3,31 +3,77 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ELOVE GAME — Side Scroller</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <title>ELOVE GAME - Side Scroller</title>
+  <link rel="stylesheet" href="css/style.css?v=ascii-plain-20260810" />
   <link rel="preload" as="image" href="assets/game/nars-landscape.jpg" />
 </head>
 <body>
   <div id="app">
     <header class="topbar">
       <h1>ELOVE GAME</h1>
-      <p class="tagline">Nars Canyon · PixelWhale SF · Side Scroller</p>
+      <p class="tagline">Ultra Earth - Cake Realm - Boring Company - Neuralink - Tesla Works - SpaceX Ascent - Moon Bouncing - Inside Starship</p>
     </header>
 
     <main id="game-wrap">
       <div id="title-screen" class="overlay-panel">
         <div class="title-card">
           <h2>ELOVE GAME</h2>
-          <p class="sub">Side Scroller · Planet Nars</p>
-          <p class="hint">Press <kbd>Enter</kbd> or <kbd>J</kbd> to start</p>
-          <p id="title-best" class="best"></p>
-          <div id="asset-strip" class="asset-strip hidden" aria-label="Art packs">
-            <img src="assets/imagine/sheets/player-cat-rocket.png" alt="Cat rocket sheet" />
-            <img src="assets/imagine/sheets/enemy-drone.png" alt="Drone sheet" />
-            <img src="assets/imagine/sheets/enemy-cyborg.png" alt="Cyborg sheet" />
-            <img src="assets/imagine/sheets/pickup-blade.png" alt="Blade sheet" />
+          <p id="title-sub" class="sub">Side Scroller - Ultra Earth</p>
+          <div id="level-select" class="level-select" role="group" aria-label="Level select">
+            <button type="button" class="level-btn selected" data-level="1">
+              <span class="lvl-num">1</span>
+              <span class="lvl-name">Ultra Earth</span>
+              <span class="lvl-best"></span>
+            </button>
+            <button type="button" class="level-btn locked" data-level="2">
+              <span class="lvl-num">2</span>
+              <span class="lvl-name">Cake Realm</span>
+              <span class="lvl-best"></span>
+            </button>
+            <button type="button" class="level-btn locked" data-level="2.5">
+              <span class="lvl-num">2.5</span>
+              <span class="lvl-name">Boring Company</span>
+              <span class="lvl-best"></span>
+            </button>
+            <button type="button" class="level-btn locked" data-level="2.55">
+              <span class="lvl-num">2.5.5</span>
+              <span class="lvl-name">Neuralink</span>
+              <span class="lvl-best"></span>
+            </button>
+            <button type="button" class="level-btn locked" data-level="3">
+              <span class="lvl-num">3</span>
+              <span class="lvl-name">Tesla Works</span>
+              <span class="lvl-best"></span>
+            </button>
+            <button type="button" class="level-btn locked" data-level="4">
+              <span class="lvl-num">4</span>
+              <span class="lvl-name">SpaceX Ascent</span>
+              <span class="lvl-best"></span>
+            </button>
+            <button type="button" class="level-btn locked" data-level="4.5">
+              <span class="lvl-num">4.5</span>
+              <span class="lvl-name">Moon Bouncing</span>
+              <span class="lvl-best"></span>
+            </button>
+            <button type="button" class="level-btn locked" data-level="5">
+              <span class="lvl-num">5</span>
+              <span class="lvl-name">Inside Starship</span>
+              <span class="lvl-best"></span>
+            </button>
           </div>
-          <p class="asset-note">Grok Imagine sprites · neon synthwave</p>
+          <p class="hint">Select level - <kbd>Enter</kbd> / <kbd>J</kbd> to start</p>
+          <p id="title-best" class="best"></p>
+          <p id="title-toast" class="title-toast hidden"></p>
+          <div id="asset-strip" class="asset-strip hidden" aria-label="Art packs">
+            <img src="assets/imagine/sheets/player-cat-rocket.png?v=2026-07-16T18:12:56.210Z" alt="Cat rocket sheet" />
+            <img src="assets/imagine/sheets/enemy-drone.png?v=drone-half-size-20260720" alt="Drone sheet" />
+            <img src="assets/imagine/sheets/enemy-cyborg.png?v=2026-07-16T18:12:56.210Z" alt="Cyborg sheet" />
+            <img src="assets/imagine/sheets/enemy-optimus.png?v=optimus-enemy-20260723" alt="Optimus sheet" />
+            <img src="assets/imagine/sheets/enemy-carbot.png?v=carbot-boss-20260723" alt="Carbot boss sheet" />
+            <img src="assets/imagine/sheets/enemy-rocket.png?v=rocket-boss-20260724" alt="Rocket boss sheet" />
+            <img src="assets/imagine/sheets/pickup-blade.png?v=2026-07-16T18:12:56.210Z" alt="Blade sheet" />
+          </div>
+          <p class="asset-note">Player: clean per-anim Grok videos - Optimus - L2.5 Boring - L2.5.5 Neuralink OR - L3 Carbot - L4 Rocket boss - L4.5 Moon - L5 Elove</p>
         </div>
       </div>
 
@@ -39,11 +85,11 @@
         </div>
         <div id="eye-timer" class="eye-timer hidden"></div>
         <div id="toast" class="toast hidden"></div>
-        <div id="tutorial" class="tutorial hidden">A/D move · jump · slash hostiles</div>
+        <div id="tutorial" class="tutorial hidden">A/D move - jump - slash hostiles</div>
         <div class="hud-bottom">
           <div class="inv">
-            <span id="inv-key">FOES:—</span>
-            <span id="inv-sword">BLADE:—</span>
+            <span id="inv-key">FOES:-</span>
+            <span id="inv-sword">BLADE:-</span>
             <span id="inv-pad">EXIT:LOCK</span>
             <span id="inv-door" class="hidden"></span>
           </div>
@@ -60,8 +106,17 @@
         <div class="end-card">
           <h2 id="end-title">CLEARED!</h2>
           <p id="end-sub"></p>
+          <div id="end-clue-note" class="end-clue-note hidden" aria-label="Assembled clue note">
+            <img
+              id="end-clue-paper"
+              src="assets/imagine/clues/clue-summary-paper.png?v=ultra-earth-paper-clue-20260802"
+              alt=""
+              draggable="false"
+            />
+            <p id="end-clue-text" class="end-clue-text"></p>
+          </div>
           <p id="end-best" class="best"></p>
-          <p class="hint">Press <kbd>R</kbd> to run again</p>
+          <p id="end-hint" class="hint">Press <kbd>R</kbd> to run again</p>
         </div>
       </div>
     </main>
@@ -69,17 +124,19 @@
     <aside class="hud-help" aria-label="Controls">
       <strong>Controls</strong>
       <ul>
-        <li><kbd>A</kbd>/<kbd>D</kbd> or arrows — Move</li>
-        <li><kbd>W</kbd> / <kbd>Space</kbd> / <kbd>↑</kbd> — Jump</li>
-        <li><kbd>J</kbd> — Slash</li>
-        <li><kbd>F</kbd> — Force-warp toss</li>
-        <li><kbd>R</kbd> — Restart</li>
-        <li><kbd>M</kbd> — Mute</li>
+        <li><kbd>1</kbd>-<kbd>5</kbd> / <kbd>6</kbd>-<kbd>8</kbd> mid-levels / title buttons - Level select</li>
+        <li><kbd>A</kbd>/<kbd>D</kbd> or arrows - Move</li>
+        <li><kbd>W</kbd> / <kbd>Space</kbd> / <kbd>Up</kbd> - Jump</li>
+        <li>Pads - purple grip - cyan ice - gold bounce</li>
+        <li><kbd>J</kbd> - Slash</li>
+        <li><kbd>F</kbd> - Force-warp toss</li>
+        <li><kbd>R</kbd> - Restart</li>
+        <li><kbd>M</kbd> - Mute</li>
       </ul>
-      <p style="margin:12px 0 0;font-size:0.8rem"><a href="gallery.html" style="color:var(--cyan)">Asset gallery →</a></p>
+      <p style="margin:12px 0 0;font-size:0.8rem"><a href="gallery.html" style="color:var(--cyan)">Asset gallery -></a></p>
     </aside>
   </div>
 
-  <script type="module" src="js/main.js"></script>
+  <script type="module" src="js/main.js?v=coding-fixes-20260811f"></script>
 </body>
 </html>

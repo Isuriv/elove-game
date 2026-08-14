@@ -1,0 +1,65 @@
+{
+  "url": "http://localhost:8081/?v=plat-types-20260719b",
+  "screenshots": [
+    "C:\\Users\\ethra\\Documents\\Elove\\Mars Love Blastar\\elove-game\\screenshots\\platforms-spawn.png",
+    "C:\\Users\\ethra\\Documents\\Elove\\Mars Love Blastar\\elove-game\\screenshots\\platforms-slip.png",
+    "C:\\Users\\ethra\\Documents\\Elove\\Mars Love Blastar\\elove-game\\screenshots\\platforms-bounce.png",
+    "C:\\Users\\ethra\\Documents\\Elove\\Mars Love Blastar\\elove-game\\screenshots\\platforms-canvas.png"
+  ],
+  "platformNetworkHits": {
+    "platform-grip.png": 200,
+    "platform-slip.png": 200,
+    "platform-bounce.png": 200
+  },
+  "artCheck": {
+    "eloveArt": {
+      "player": {
+        "w": 63,
+        "h": 50
+      },
+      "drone": {
+        "w": 72,
+        "h": 58
+      },
+      "playerAnims": {
+        "idle": 4,
+        "fly": 6,
+        "slash": 4,
+        "hurt": 3
+      },
+      "platforms": {
+        "platform": {
+          "w": 47,
+          "h": 26,
+          "kind": "grip"
+        },
+        "platformSlip": {
+          "w": 47,
+          "h": 26,
+          "kind": "slip"
+        },
+        "platformBounce": {
+          "w": 53,
+          "h": 30,
+          "kind": "bounce"
+        }
+      },
+      "pipeline": {
+        "mode": "per-anim-clean",
+        "pixelate": false,
+        "cell": 256,
+        "sizeNote": "Pack player into same world box as drone (DRONE_TARGET)."
+      },
+      "cacheVer": "2026-07-16T19:31:39.326Z",
+      "source": "grok-video-per-anim-clean"
+    },
+    "artExposed": false,
+    "neonPlatforms": null,
+    "fetchStatus": {
+      "platform-grip.png": 200,
+      "platform-slip.png": 200,
+      "platform-bounce.png": 200
+    }
+  },
+  "grokPlatformAssetsLoaded": true
+}

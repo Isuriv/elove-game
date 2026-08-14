@@ -1,0 +1,41 @@
+{
+  "bufferW": 480,
+  "bufferH": 270,
+  "cssW": 1920,
+  "cssH": 1080,
+  "scaleX": 4,
+  "scaleY": 4,
+  "integerScale": true,
+  "display": {
+    "internal": "480x270",
+    "scale": 4,
+    "css": "1920x1080"
+  },
+  "art": {
+    "player": {
+      "w": 72,
+      "h": 90
+    },
+    "drone": {
+      "w": 90,
+      "h": 72
+    },
+    "cyborg": {
+      "w": 72,
+      "h": 90
+    },
+    "blade": {
+      "w": 36,
+      "h": 72
+    },
+    "cacheVer": "2026-07-16T18:12:56.210Z",
+    "source": "grok-video-frames-360",
+    "cell": 360,
+    "cellStandard": {
+      "cell": 360,
+      "logical": 90,
+      "note": "360x360 sheet cells; chunky logical grid 90x90 (x4). Pack into 480x270 world at /4 for 1:1 pixel mapping; HD display x4 -> ~360 CSS px character height."
+    }
+  },
+  "wrapW": 1920
+}

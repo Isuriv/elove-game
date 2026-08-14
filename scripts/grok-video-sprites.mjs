@@ -1,5 +1,5 @@
 /**
- * Grok Imagine Video → animated sprite sheets
+ * Grok Imagine Video -> animated sprite sheets
  *
  * Pipeline (yes, this is supported by the xAI API):
  *   1. Image-to-video: animate an existing still with grok-imagine-video
@@ -13,9 +13,10 @@
  *   node scripts/grok-video-sprites.mjs
  *   node scripts/grok-video-sprites.mjs player          # one asset
  *   node scripts/grok-video-sprites.mjs --no-edit       # skip Imagine edits
+ *   node scripts/grok-video-sprites.mjs player --reuse-video  # frames/sheet from existing mp4
  *   node scripts/grok-video-sprites.mjs --frames 6
  *
- * Then hard-refresh the game — sheets loader already animates these.
+ * Then hard-refresh the game - sheets loader already animates these.
  */
 import fs from "fs/promises";
 import path from "path";
@@ -70,7 +71,7 @@ const ASSETS = [
     ].join(" "),
     motion: [
       "Animate this exact side-view CHIBI WHITE cat (big head, tiny body, white cream fur) riding a heart-marked rocket.",
-      "Keep chibi proportions and white fur identical in every frame — same size, locked scale, no zoom.",
+      "Keep chibi proportions and white fur identical in every frame - same size, locked scale, no zoom.",
       "Static camera, locked framing, character centered and SAME size the entire time.",
       "Loopable soft hover bob, thruster pulse, then a cute boost lean.",
       "Solid pure black background #000000 the entire time.",
@@ -79,15 +80,16 @@ const ASSETS = [
     videoEdit: [
       "Keep the white chibi cat-on-rocket identical with big-head proportions and same scale every frame.",
       "Replace any background with solid pure black #000000.",
-      "Remove any neon glow outline if present — clean hard pixel edges only.",
+      "Remove any neon glow outline if present - clean hard pixel edges only.",
       "Clean 2D game sprite animation, chunky pixels, no text, no HUD, static framing, locked character size.",
     ].join(" "),
     frameEdit: [
       "Convert to a single game sprite frame on solid pure black #000000 background.",
-      "Preserve the WHITE CHIBI cat on rocket exactly — big head tiny body, side view, chunky pixel art,",
+      "Preserve the WHITE CHIBI cat on rocket exactly - big head tiny body, side view, chunky pixel art,",
       "no neon outline glow, clean silhouette, no text no HUD.",
     ].join(" "),
-    bakeNeonOutline: true,
+    // User wants clean game pixels - do NOT bake pink/cyan neon rims.
+    bakeNeonOutline: false,
   },
   {
     id: "enemy-drone",
@@ -96,10 +98,10 @@ const ASSETS = [
     aspect_ratio: "1:1",
     resolution: "480p",
     frames: 4,
-    anims: { fly: [0, 1, 2], attack: [3], hurt: [1] },
+    anims: { fly: [0, 1, 2], hurt: [1] },
     motion: [
       "Animate this exact side-view hostile combat drone facing left.",
-      "Static camera, thruster flicker and slight hover bob, then a short attack flash.",
+      "Static camera, thruster flicker and slight hover bob only - no attack flash, no muzzle, no sparks.",
       "Solid pure black background #000000, no camera move, no text.",
     ].join(" "),
     videoEdit:
@@ -117,9 +119,9 @@ const ASSETS = [
     anims: { idle: [0], walk: [1, 2], attack: [3], hurt: [0] },
     motion: [
       "Animate this exact side-view white-armored cyborg soldier facing right.",
-      "Static camera, locked framing, character SAME size in every frame — no zoom.",
+      "Static camera, locked framing, character SAME size in every frame - no zoom.",
       "Idle, then walk-in-place two steps, then raise blaster and fire once.",
-      "Keep the full body large and readable during the blast pose — do not shrink for the attack.",
+      "Keep the full body large and readable during the blast pose - do not shrink for the attack.",
       "Solid pure black background #000000, no camera move, no text.",
     ].join(" "),
     videoEdit:
@@ -158,6 +160,7 @@ function parseArgs(argv) {
   return {
     only,
     edit: !flags.has("--no-edit"),
+    reuseVideo: flags.has("--reuse-video"),
     frames,
   };
 }
@@ -539,52 +542,65 @@ async function writeNamedAnimFrames(framePaths, asset) {
 async function processAsset(apiKey, asset, opts) {
   console.log(`\n== ${asset.id} ==`);
 
-  if (asset.stillPrompt) {
-    process.stdout.write("  generating chibi/still reference... ");
-    await generateStill(apiKey, asset.stillPrompt, asset.still);
-    console.log(`ok → ${path.relative(ROOT, asset.still)}`);
-  }
-
-  const still = await resolveStill(asset);
-  if (!still) {
-    console.error(`  skip ${asset.id}: no still image`);
-    return null;
-  }
-
   const frameCount = opts.frames || asset.frames;
-  console.log(`  still: ${path.relative(ROOT, still)}`);
+  let videoPath = path.join(VIDEO_DIR, `${asset.id}-edited.mp4`);
+  if (!(await exists(videoPath))) {
+    videoPath = path.join(VIDEO_DIR, `${asset.id}.mp4`);
+  }
 
-  const imageDataUrl = await fileToDataUrl(still, "image/png");
-  process.stdout.write("  starting image→video... ");
-  const genId = await startVideo(apiKey, {
-    model: VIDEO_MODEL,
-    prompt: asset.motion,
-    duration: asset.duration,
-    aspect_ratio: asset.aspect_ratio,
-    resolution: asset.resolution,
-    image: { url: imageDataUrl },
-  });
-  console.log(`request ${genId}`);
-  const gen = await pollVideo(apiKey, genId, "generate");
+  if (opts.reuseVideo) {
+    if (!(await exists(videoPath))) {
+      console.error(`  skip ${asset.id}: no video at ${path.relative(ROOT, videoPath)}`);
+      return null;
+    }
+    console.log(`  reuse video: ${path.relative(ROOT, videoPath)}`);
+  } else {
+    if (asset.stillPrompt) {
+      process.stdout.write("  generating chibi/still reference... ");
+      await generateStill(apiKey, asset.stillPrompt, asset.still);
+      console.log(`ok -> ${path.relative(ROOT, asset.still)}`);
+    }
 
-  await fs.mkdir(VIDEO_DIR, { recursive: true });
-  let videoPath = path.join(VIDEO_DIR, `${asset.id}.mp4`);
-  await download(gen.url, videoPath);
-  console.log(`  saved ${path.relative(ROOT, videoPath)}`);
+    const still = await resolveStill(asset);
+    if (!still) {
+      console.error(`  skip ${asset.id}: no still image`);
+      return null;
+    }
 
-  let videoUrl = gen.url;
-  if (opts.edit && asset.videoEdit) {
-    process.stdout.write("  starting video edit (black BG / sprite)... ");
-    try {
-      const editId = await startVideoEdit(apiKey, videoUrl, asset.videoEdit);
-      console.log(`request ${editId}`);
-      const edited = await pollVideo(apiKey, editId, "edit");
-      videoPath = path.join(VIDEO_DIR, `${asset.id}-edited.mp4`);
-      await download(edited.url, videoPath);
-      videoUrl = edited.url;
-      console.log(`  saved ${path.relative(ROOT, videoPath)}`);
-    } catch (err) {
-      console.log("\n  video edit skipped:", err.message || err);
+    console.log(`  still: ${path.relative(ROOT, still)}`);
+
+    const imageDataUrl = await fileToDataUrl(still, "image/png");
+    process.stdout.write("  starting image->video... ");
+    const genId = await startVideo(apiKey, {
+      model: VIDEO_MODEL,
+      prompt: asset.motion,
+      duration: asset.duration,
+      aspect_ratio: asset.aspect_ratio,
+      resolution: asset.resolution,
+      image: { url: imageDataUrl },
+    });
+    console.log(`request ${genId}`);
+    const gen = await pollVideo(apiKey, genId, "generate");
+
+    await fs.mkdir(VIDEO_DIR, { recursive: true });
+    videoPath = path.join(VIDEO_DIR, `${asset.id}.mp4`);
+    await download(gen.url, videoPath);
+    console.log(`  saved ${path.relative(ROOT, videoPath)}`);
+
+    let videoUrl = gen.url;
+    if (opts.edit && asset.videoEdit) {
+      process.stdout.write("  starting video edit (black BG / sprite)... ");
+      try {
+        const editId = await startVideoEdit(apiKey, videoUrl, asset.videoEdit);
+        console.log(`request ${editId}`);
+        const edited = await pollVideo(apiKey, editId, "edit");
+        videoPath = path.join(VIDEO_DIR, `${asset.id}-edited.mp4`);
+        await download(edited.url, videoPath);
+        videoUrl = edited.url;
+        console.log(`  saved ${path.relative(ROOT, videoPath)}`);
+      } catch (err) {
+        console.log("\n  video edit skipped:", err.message || err);
+      }
     }
   }
 
@@ -601,7 +617,7 @@ async function processAsset(apiKey, asset, opts) {
 
   console.log(`  extracting ${frameCount} frames...`);
   let framePaths = await extractFrames(videoPath, frameCount, frameDir, asset.id);
-  console.log(`  frames → ${path.relative(ROOT, frameDir)}`);
+  console.log(`  frames -> ${path.relative(ROOT, frameDir)}`);
 
   if (opts.edit && asset.frameEdit && !asset.skipFrameEdit) {
     for (let i = 0; i < framePaths.length; i++) {
@@ -626,7 +642,7 @@ async function processAsset(apiKey, asset, opts) {
   await fs.mkdir(SHEETS_DIR, { recursive: true });
   const sheetPath = path.join(SHEETS_DIR, `${asset.id}.png`);
   await stitchSheet(framePaths, sheetPath, 128);
-  console.log(`  sheet → ${path.relative(ROOT, sheetPath)}`);
+  console.log(`  sheet -> ${path.relative(ROOT, sheetPath)}`);
 
   return {
     file: `${asset.id}.png`,
@@ -646,22 +662,23 @@ async function processAsset(apiKey, asset, opts) {
 }
 
 async function main() {
+  const opts = parseArgs(process.argv.slice(2));
   const apiKey = process.env.XAI_API_KEY;
-  if (!apiKey) {
+  if (!opts.reuseVideo && !apiKey) {
     console.error("Missing XAI_API_KEY.");
     console.error('  $env:XAI_API_KEY = "xai-..."');
     console.error("  node scripts/grok-video-sprites.mjs");
-    console.error("\nThis is possible: image→video → (video edit) → extract frames → (image edit) → sheet.");
+    console.error("\nThis is possible: image->video -> (video edit) -> extract frames -> (image edit) -> sheet.");
     process.exit(1);
   }
 
-  const opts = parseArgs(process.argv.slice(2));
   const queue = opts.only.length
     ? ASSETS.filter((a) => opts.only.some((o) => a.id.includes(o)))
     : ASSETS;
 
   console.log(`Model: ${VIDEO_MODEL}`);
   console.log(`Edit passes: ${opts.edit ? "on" : "off"}`);
+  console.log(`Reuse video: ${opts.reuseVideo ? "on" : "off"}`);
   console.log(`Assets: ${queue.map((a) => a.id).join(", ")}`);
 
   let existing = {};

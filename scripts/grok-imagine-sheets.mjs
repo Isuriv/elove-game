@@ -58,8 +58,8 @@ const SHEETS = [
   },
   {
     id: "enemy-drone",
-    cols: 4,
-    anims: { fly: [0, 1, 2], attack: [3], hurt: [1] },
+    cols: 3,
+    anims: { fly: [0, 1, 2], hurt: [1] },
     frames: [
       {
         file: "drone-0-hover-a.png",
@@ -72,10 +72,6 @@ const SHEETS = [
       {
         file: "drone-2-hover-c.png",
         prompt: `${STYLE} SAME hostile flying combat drone facing left, thruster flame frame C, slight bob`,
-      },
-      {
-        file: "drone-3-attack.png",
-        prompt: `${STYLE} SAME hostile flying combat drone facing left, firing cyan laser bolts, muzzle flash`,
       },
     ],
   },
@@ -242,7 +238,7 @@ async function main() {
     const sheetFile = `${sheet.id}.png`;
     const sheetPath = path.join(SHEETS_DIR, sheetFile);
     await stitchSheet(framePaths, sheetPath);
-    console.log(`  sheet → assets/imagine/sheets/${sheetFile}`);
+    console.log(`  sheet -> assets/imagine/sheets/${sheetFile}`);
     manifest.sheets[sheet.id] = {
       file: sheetFile,
       cols: sheet.cols,
