@@ -1,13 +1,13 @@
 /* ELOVE GAME - side-scroller config */
 
 /** Bump when shipping runtime JS changes (keep in sync with index.html / import ?v=). */
-export const BUILD = "coding-fixes-20260811f";
+export const BUILD = "rainbow-bolts-20260816b";
 
 export const CFG = {
   /**
-   * Native pixel-art framebuffer (16:9). Nearest-neighbor CSS integer upscale to HD.
-   * 480x270 -> x4 = 1920x1080. Character sheets author at 360x360 cells with a 90px
-   * logical grid (/4 into world, x4 on HD display ~ 360 CSS px tall).
+   * Native pixel-art framebuffer (16:9). Nearest-neighbor CSS integer upscale.
+   * 480x270 -> x2=960x540, x3=1440x810. Cap at x3 so HD x4 (1920x1080) does not
+   * dominate the viewport or look overly chunky; chrome sits around the canvas.
    */
   INTERNAL_W: 480,
   INTERNAL_H: 270,
@@ -17,9 +17,11 @@ export const CFG = {
   JUMP_BUFFER_MS: 125,
   /** Brief grace after leaving a platform where jump still works. */
   COYOTE_MS: 65,
-  /** Preferred CSS display size when the viewport allows (true HD). */
-  DISPLAY_TARGET_W: 1920,
-  DISPLAY_TARGET_H: 1080,
+  /** Preferred CSS display size (x3). Fallback x2 when chrome cannot fit. */
+  DISPLAY_TARGET_W: 1440,
+  DISPLAY_TARGET_H: 810,
+  /** Largest integer CSS scale (x4 HD is too chunky and crowds chrome). */
+  DISPLAY_MAX_SCALE: 3,
   TILE: 16,
   /** World units per framebuffer pixel (keep 1 so art/world stay locked). */
   VIEW_SCALE: 1,
@@ -50,11 +52,25 @@ export const CFG = {
   SLASH_DURATION: 240,
   FORCE_COOLDOWN: 2200,
   FORCE_RANGE: 56,
-  /** Neon gun pickup: continuous auto-fire duration (ms). */
+  /** Pink gun pickup: auto-fire rainbow drone-style bolts (not a laser). */
   GUN_FIRE_MS: 3000,
   GUN_FIRE_INTERVAL: 100,
   GUN_BULLET_SPEED: 5.2,
   GUN_BULLET_RANGE: 220,
+  /** Extra pink guns on the first gun pickup of a run (scattered loot has noScatter). */
+  GUN_SCATTER_COUNT: 10,
+  RAINBOW_BULLET_COLORS: [
+    "#ff004d",
+    "#ff5a00",
+    "#ffd400",
+    "#5cff00",
+    "#00ff9a",
+    "#00eaff",
+    "#2f6bff",
+    "#8a1cff",
+    "#ff00ea",
+    "#ff4da6",
+  ],
   /** L3 mini helper droid - slow friendly bolts at nearest foe. */
   HELPER_FIRE_INTERVAL: 720,
   HELPER_BULLET_SPEED: 2.4,

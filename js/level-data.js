@@ -1,5 +1,15 @@
 /* Per-level enemy/loot spawn tables + win progression ladder (data only). */
 
+/** Cake Realm candy art variants (cycled by spawn order in buildLoot). */
+export const CANDY_KINDS = [
+  "lollipop",
+  "candy-cane",
+  "gumdrop",
+  "wrapped-chocolate",
+  "jelly-bean",
+  "hard",
+];
+
 /** Shared Elove clue row (L1 + Boring Company). */
 const CLUE_ROW = [
   { type: "clue", x: 8, yTile: 10 },
@@ -15,9 +25,10 @@ const CLUE_ROW = [
 ];
 
 /**
- * Enemy spawns per level.
- * Entry: [kind, xTiles, yMode, yArg?]
- * yMode: "floor" | "plat" (yArg = tileY) | "air" (yArg = y in tiles)
+ * Enemy cast per level (counts + kinds preserved).
+ * Entry: [kind, xTiles, yMode, yArg?] — trailing fields are legacy layout hints only;
+ * game.js randomizes positions onto World.walkPads() each spawnRun.
+ * yMode hint: "floor" | "plat" | "air" (drones always use air rules).
  */
 export const LEVEL_ENEMY_SPAWNS = {
   1: [
@@ -77,7 +88,6 @@ export const LEVEL_ENEMY_SPAWNS = {
     ["drone", 34, "air", 5.5],
     ["drone", 50, "air", 3],
     ["drone", 80, "air", 4.5],
-    ["carbot", 86, "floor"],
   ],
   4: [
     ["cyborg", 12, "plat", 9],
@@ -90,7 +100,6 @@ export const LEVEL_ENEMY_SPAWNS = {
     ["drone", 40, "air", 3.5],
     ["drone", 58, "air", 5.5],
     ["drone", 78, "air", 4],
-    ["rocket", 86, "floor"],
   ],
   4.5: [
     ["cyborg", 14, "plat", 10],
@@ -151,25 +160,25 @@ export const LEVEL_EXTRA_LOOT = {
   ],
   2: [
     { type: "clue", x: 8, yTile: 10 },
-    { type: "toffee", x: 12, yTile: 10 },
+    { type: "candy", x: 12, yTile: 10 },
     { type: "clue", x: 16, yTile: 8 },
-    { type: "toffee", x: 20, yTile: 8 },
+    { type: "candy", x: 20, yTile: 8 },
     { type: "clue", x: 25, yTile: 9 },
-    { type: "toffee", x: 29, yTile: 9 },
+    { type: "candy", x: 29, yTile: 9 },
     { type: "clue", x: 32, yTile: 7 },
-    { type: "toffee", x: 36, yTile: 7 },
+    { type: "candy", x: 36, yTile: 7 },
     { type: "clue", x: 40, yTile: 9 },
-    { type: "toffee", x: 44, yTile: 9 },
+    { type: "candy", x: 44, yTile: 9 },
     { type: "clue", x: 48, yTile: 6 },
-    { type: "toffee", x: 52, yTile: 6 },
+    { type: "candy", x: 52, yTile: 6 },
     { type: "clue", x: 57, yTile: 8 },
-    { type: "toffee", x: 61, yTile: 8 },
+    { type: "candy", x: 61, yTile: 8 },
     { type: "clue", x: 66, yTile: 7 },
-    { type: "toffee", x: 70, yTile: 7 },
+    { type: "candy", x: 70, yTile: 7 },
     { type: "clue", x: 74, yTile: 9 },
-    { type: "toffee", x: 78, yTile: 9 },
+    { type: "candy", x: 78, yTile: 9 },
     { type: "clue", x: 82, yTile: 8 },
-    { type: "toffee", x: 85, yTile: 8 },
+    { type: "candy", x: 85, yTile: 8 },
   ],
   3: [
     { type: "clue", x: 8, yTile: 10 },

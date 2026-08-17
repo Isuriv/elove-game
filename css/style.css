@@ -25,6 +25,8 @@ html, body {
   margin: 0;
   min-height: 100%;
   height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
   background:
     radial-gradient(ellipse at 20% 0%, #c060c8 0%, transparent 50%),
     radial-gradient(ellipse at 80% 100%, #40a0b8 0%, transparent 45%),
@@ -34,53 +36,58 @@ html, body {
 }
 
 #app {
-  max-width: none;
-  width: 100%;
-  margin: 0 auto;
-  padding: 0;
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  width: max-content;
+  max-width: 100%;
   min-height: 100vh;
   min-height: 100dvh;
+  margin: 0 auto;
+  padding: 6px 10px;
+  gap: 4px;
   box-sizing: border-box;
   position: relative;
 }
 
-/* Float chrome over the stage so the 480x270 canvas can hit x4 HD (1920x1080). */
 .topbar {
-  position: absolute;
-  top: 6px;
-  left: 10px;
+  position: relative;
   z-index: 8;
   pointer-events: none;
+  flex: 0 0 auto;
   text-shadow: 0 1px 6px rgba(90, 40, 140, 0.55);
 }
 
 .topbar h1 {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.92rem;
   letter-spacing: 0.08em;
   color: var(--pink);
   text-shadow: 0 0 18px rgba(255, 126, 185, 0.35);
 }
 
 .tagline {
-  margin: 2px 0 0;
+  margin: 1px 0 0;
   color: var(--cyan);
-  font-size: 0.68rem;
+  font-size: 0.62rem;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 #game-wrap {
   position: relative;
-  /* JS sets exact integer-scale HD size (content-box); border sits outside */
+  /* JS sets exact integer-scale size (content-box); border sits outside */
   box-sizing: content-box;
-  width: min(100%, 1920px);
+  width: min(100%, 1440px);
   height: auto;
   aspect-ratio: 16 / 9;
   max-width: none;
   margin: 0 auto;
+  flex: 0 0 auto;
   background: #4a3480;
-  /* Outline/shadow only - must not consume layout px (would block x4 on 1080p). */
   border: none;
   outline: 2px solid #ff2ea6;
   outline-offset: -2px;
@@ -88,11 +95,8 @@ html, body {
     0 0 0 1px #00e8ff55,
     0 0 28px rgba(255, 110, 199, 0.4),
     0 12px 36px rgba(58, 36, 88, 0.35);
-  /* Square corners - border-radius can soft-filter the canvas edge on some GPUs */
   border-radius: 0;
   overflow: hidden;
-  justify-self: center;
-  align-self: center;
 }
 
 #game-wrap canvas,
@@ -102,7 +106,7 @@ html, body {
   /* Exact px sizes come from render2d._resize - never stretch via % */
   width: auto;
   height: auto;
-  /* Native 480x270 -> crisp nearest-neighbor upscale to HD (x2/x3/x4) */
+  /* Native 480x270 -> crisp nearest-neighbor upscale (x2/x3) */
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
@@ -128,24 +132,31 @@ html, body {
 .end-card {
   pointer-events: none;
   text-align: center;
-  padding: 28px 36px;
+  padding: 16px 20px;
   border-radius: 12px;
   background: linear-gradient(160deg, rgba(140, 100, 200, 0.78), rgba(100, 120, 190, 0.72));
   border: 1px solid rgba(214, 182, 255, 0.55);
   box-shadow: 0 16px 36px rgba(106, 72, 160, 0.22);
-  max-width: 480px;
+  max-width: min(92%, 560px);
 }
 
 .end-card.has-clue-note {
-  max-width: 560px;
-  padding-bottom: 22px;
+  width: min(92%, 620px);
+  max-width: 620px;
+  padding: 12px 14px 16px;
+  background: linear-gradient(160deg, rgba(6, 12, 24, 0.92), rgba(24, 14, 42, 0.88));
+  border-color: rgba(0, 232, 255, 0.45);
+  box-shadow:
+    0 0 22px rgba(0, 232, 255, 0.16),
+    0 16px 36px rgba(8, 6, 20, 0.42);
 }
 
-/* Level 4.5 / 5 win - Starship cabin backdrop behind the pieced note */
+/* Level 4.5 / 5 win - Starship cabin backdrop behind the holocomm */
 .end-card.has-starship-interior {
-  max-width: 600px;
+  width: min(92%, 640px);
+  max-width: 640px;
   background-image:
-    linear-gradient(160deg, rgba(20, 28, 42, 0.72), rgba(40, 52, 72, 0.68)),
+    linear-gradient(160deg, rgba(8, 14, 26, 0.82), rgba(20, 28, 42, 0.78)),
     url("../assets/imagine/moon/moon-starship-interior.png?v=moon-bouncing-20260805");
   background-size: cover;
   background-position: center;
@@ -156,7 +167,7 @@ html, body {
 /* Level 5 win - Mars approach after the reunion cinematic */
 .end-card.has-mars-save {
   background-image:
-    linear-gradient(160deg, rgba(24, 14, 20, 0.7), rgba(60, 28, 20, 0.62)),
+    linear-gradient(160deg, rgba(16, 8, 14, 0.8), rgba(48, 20, 16, 0.74)),
     url("../assets/imagine/starship/starship-mars-approach.png?v=l5-mars-vacation-20260807");
   border-color: rgba(232, 160, 120, 0.55);
   box-shadow: 0 16px 36px rgba(60, 24, 16, 0.4);
@@ -168,17 +179,52 @@ html, body {
 }
 
 .end-clue-note {
+  --holo: #7df9ff;
+  --holo-2: #ff6ec7;
   position: relative;
-  width: min(100%, 480px);
-  margin: 14px auto 4px;
-  filter: drop-shadow(0 10px 18px rgba(40, 20, 60, 0.45));
+  width: 100%;
+  margin: 8px auto 2px;
+  filter: drop-shadow(0 0 16px var(--holo));
 }
 
 .end-clue-note.hidden {
   display: none;
 }
 
-.end-clue-note img {
+.holo-rig {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+
+.holo-plate {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 38%;
+  user-select: none;
+  pointer-events: none;
+  animation: holo-flicker 4.6s ease-in-out infinite;
+}
+
+.holo-figure {
+  position: absolute;
+  left: 2%;
+  bottom: 6%;
+  width: 23%;
+  z-index: 3;
+  pointer-events: none;
+  filter: drop-shadow(0 0 12px var(--holo));
+  animation:
+    holo-flicker 3.1s ease-in-out infinite,
+    holo-bob 2.6s ease-in-out infinite;
+}
+
+.holo-figure img {
   display: block;
   width: 100%;
   height: auto;
@@ -186,34 +232,220 @@ html, body {
   pointer-events: none;
 }
 
+.holo-scanlines {
+  position: absolute;
+  inset: 6% 6% 10% 6%;
+  z-index: 4;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--holo) 0 1px,
+    transparent 1px 3px
+  );
+  background-size: 100% 6px;
+  animation: holo-scan 4.8s linear infinite;
+  mix-blend-mode: screen;
+  opacity: 0.22;
+}
+
+.holo-header {
+  position: absolute;
+  top: 8%;
+  left: 26%;
+  right: 8%;
+  z-index: 6;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: clamp(0.5rem, 1.5vw, 0.68rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--holo);
+  text-shadow: 0 0 8px var(--holo);
+  white-space: nowrap;
+}
+
+.holo-status::before {
+  content: "";
+  display: inline-block;
+  width: 0.45em;
+  height: 0.45em;
+  margin-right: 0.4em;
+  border-radius: 50%;
+  background: var(--holo);
+  box-shadow: 0 0 8px var(--holo);
+  animation: holo-blink 1.15s step-end infinite;
+  vertical-align: 0.05em;
+}
+
+.holo-channel {
+  color: var(--holo-2);
+  text-shadow: 0 0 8px var(--holo-2);
+  white-space: nowrap;
+}
+
 .end-clue-text {
   position: absolute;
-  inset: 18% 16% 20% 16%;
+  inset: 18% 8% 12% 26%;
+  z-index: 5;
   margin: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  color: #3a2a18;
-  font-family: "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
-  font-size: clamp(0.92rem, 2.4vw, 1.12rem);
-  line-height: 1.45;
+  display: block;
+  overflow-y: auto;
+  pointer-events: auto;
+  text-align: left;
+  color: #eafcff;
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: clamp(0.62rem, 1.7vw, 0.82rem);
+  line-height: 1.38;
   letter-spacing: 0.01em;
   font-weight: 600;
-  text-shadow: 0 1px 0 rgba(255, 245, 220, 0.55);
-  transform: rotate(-0.6deg);
+  text-shadow:
+    0 0 6px var(--holo),
+    0 0 1px #fff;
+  scrollbar-width: thin;
+  scrollbar-color: var(--holo) transparent;
+}
+
+.end-clue-note[data-level="1"] {
+  --holo: #7df9ff;
+  --holo-2: #ff6ec7;
+}
+
+.end-clue-note[data-level="2"] {
+  --holo: #ffb7e2;
+  --holo-2: #ffe066;
+}
+
+.end-clue-note[data-level="2"] .holo-plate {
+  filter: hue-rotate(308deg) saturate(1.12);
+}
+
+.end-clue-note[data-level="2.5"] {
+  --holo: #ffd28a;
+  --holo-2: #ff8a4a;
+}
+
+.end-clue-note[data-level="2.5"] .holo-plate {
+  filter: hue-rotate(32deg) saturate(1.2);
+}
+
+.end-clue-note[data-level="2.55"] {
+  --holo: #9ef7d2;
+  --holo-2: #7df9ff;
+}
+
+.end-clue-note[data-level="2.55"] .holo-plate {
+  filter: hue-rotate(148deg) saturate(1.05);
+}
+
+.end-clue-note[data-level="3"] {
+  --holo: #ff9aa8;
+  --holo-2: #ffe066;
+}
+
+.end-clue-note[data-level="3"] .holo-plate {
+  filter: hue-rotate(338deg) saturate(1.18);
+}
+
+.end-clue-note[data-level="4"] {
+  --holo: #8ecbff;
+  --holo-2: #ffffff;
+}
+
+.end-clue-note[data-level="4"] .holo-plate {
+  filter: hue-rotate(-16deg) saturate(1.08);
+}
+
+.end-clue-note[data-level="4.5"] {
+  --holo: #d7f0ff;
+  --holo-2: #c9d4e8;
+}
+
+.end-clue-note[data-level="4.5"] .holo-plate {
+  filter: grayscale(0.28) brightness(1.12) saturate(0.72);
+}
+
+.end-clue-note[data-level="5"] {
+  --holo: #ffc090;
+  --holo-2: #ffe8a0;
+}
+
+.end-clue-note[data-level="5"] .holo-plate {
+  filter: hue-rotate(18deg) saturate(1.22);
+}
+
+@keyframes holo-flicker {
+  0%,
+  18%,
+  22%,
+  100% {
+    opacity: 1;
+  }
+  20% {
+    opacity: 0.72;
+  }
+  61% {
+    opacity: 0.9;
+  }
+  83% {
+    opacity: 0.78;
+  }
+  84% {
+    opacity: 1;
+  }
+}
+
+@keyframes holo-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes holo-scan {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 0 12px;
+  }
+}
+
+@keyframes holo-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0.15;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .holo-plate,
+  .holo-figure,
+  .holo-scanlines,
+  .holo-status::before {
+    animation: none;
+  }
 }
 
 .title-card h2,
 .end-card h2 {
-  margin: 0 0 8px;
-  font-size: 2rem;
+  margin: 0 0 6px;
+  font-size: 1.55rem;
   letter-spacing: 0.1em;
   color: var(--pink);
 }
 
 .title-card .sub {
-  margin: 0 0 18px;
+  margin: 0 0 12px;
   color: var(--purple);
 }
 
@@ -232,18 +464,18 @@ html, body {
 
 .level-select {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   justify-content: center;
   flex-wrap: wrap;
-  margin: 0 0 14px;
+  margin: 0 0 10px;
   pointer-events: auto;
 }
 
 .level-btn {
   pointer-events: auto;
   cursor: pointer;
-  min-width: 132px;
-  padding: 10px 12px;
+  min-width: 118px;
+  padding: 6px 10px;
   border-radius: 8px;
   border: 1px solid rgba(214, 182, 255, 0.45);
   background: rgba(74, 52, 128, 0.55);
@@ -328,35 +560,11 @@ html, body {
   color: #c4a8e0;
 }
 
-.asset-strip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: center;
-  align-items: center;
-  margin: 16px 0 6px;
-  padding: 10px 12px;
-  background: rgba(74, 52, 128, 0.45);
-  border-radius: 8px;
-  border: 1px solid rgba(125, 249, 255, 0.3);
-}
-
-.asset-strip img {
-  /* 360px sheet cells preview at /4 = 90 CSS px (integer) */
-  height: 90px;
-  width: auto;
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
-  background: #4a3480;
-  border-radius: 0;
-  padding: 0;
-}
-
-.asset-note {
-  margin: 0;
-  font-size: 0.7rem;
-  color: var(--cyan);
-  letter-spacing: 0.04em;
+/* Title-screen preview gallery — never show on boot (sprites still load in-game). */
+.asset-strip,
+.asset-note,
+#asset-strip {
+  display: none !important;
 }
 
 #play-hud {
@@ -504,19 +712,23 @@ html, body {
 }
 
 .hud-help {
-  position: absolute;
-  bottom: 6px;
-  left: 50%;
-  transform: translateX(-50%);
+  position: relative;
   z-index: 8;
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
   background: rgba(90, 60, 140, 0.86);
   border: 1px solid #b388ff;
   border-radius: 8px;
-  padding: 4px 10px;
+  padding: 4px 8px;
   color: var(--muted);
-  font-size: 0.68rem;
-  max-width: min(96vw, 1920px);
-  width: auto;
+  font-size: 0.62rem;
+  line-height: 1.35;
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
   pointer-events: auto;
 }
 
@@ -525,21 +737,26 @@ html, body {
 }
 
 .hud-help ul {
-  margin: 6px 0 0;
+  margin: 0;
   padding-left: 0;
   list-style: none;
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 14px;
+  gap: 2px 12px;
+  flex: 1 1 auto;
 }
 
 .hud-help li {
   margin: 0;
 }
 
-.hud-help p {
-  margin: 6px 0 0 !important;
-  font-size: 0.75rem !important;
+.hud-help li a {
+  color: var(--cyan);
+  text-decoration: none;
+}
+
+.hud-help li a:hover {
+  text-decoration: underline;
 }
 
 kbd {
@@ -553,7 +770,7 @@ kbd {
 }
 
 @media (max-width: 640px) {
-  #app { padding: 10px; }
-  .topbar h1 { font-size: 1.25rem; }
+  #app { padding: 6px; }
+  .topbar h1 { font-size: 0.95rem; }
   #game-wrap { width: min(100%, 96vw); }
 }

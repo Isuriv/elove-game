@@ -1,0 +1,155 @@
+{
+  "x3_title": {
+    "err": null,
+    "d": {
+      "internal": "480x270",
+      "scale": 3,
+      "css": "1440x810"
+    },
+    "mode": "title",
+    "booted": true,
+    "strip": false,
+    "note": false,
+    "app": {
+      "w": 1460,
+      "h": 1080
+    },
+    "wrap": {
+      "w": 1440,
+      "h": 810
+    },
+    "help": {
+      "w": 1440,
+      "h": 26,
+      "top": 977.046875
+    },
+    "titleVisible": true,
+    "vh": 1080,
+    "vw": 1920,
+    "overflow": false,
+    "bodyScroll": {
+      "x": 1920,
+      "y": 1080
+    }
+  },
+  "x3_ingame": {
+    "mode": "play",
+    "d": {
+      "internal": "480x270",
+      "scale": 3,
+      "css": "1440x810"
+    },
+    "hudOn": true,
+    "titleHidden": true,
+    "helpBottom": 977.046875,
+    "wrapBottom": 947.34375,
+    "vh": 1080,
+    "overflow": false,
+    "bodyScroll": {
+      "x": 1920,
+      "y": 1080
+    }
+  },
+  "x2_title": {
+    "err": null,
+    "d": {
+      "internal": "480x270",
+      "scale": 2,
+      "css": "960x540"
+    },
+    "mode": "title",
+    "booted": true,
+    "strip": false,
+    "note": false,
+    "app": {
+      "w": 980,
+      "h": 1080
+    },
+    "wrap": {
+      "w": 960,
+      "h": 540
+    },
+    "help": {
+      "w": 960,
+      "h": 78,
+      "top": 868.28125
+    },
+    "titleVisible": true,
+    "vh": 1080,
+    "vw": 1920,
+    "overflow": false,
+    "bodyScroll": {
+      "x": 1920,
+      "y": 1080
+    }
+  },
+  "x2_ingame": {
+    "mode": "play",
+    "d": {
+      "internal": "480x270",
+      "scale": 2,
+      "css": "960x540"
+    },
+    "hudOn": true,
+    "titleHidden": true,
+    "helpBottom": 868.28125,
+    "wrapBottom": 786.09375,
+    "vh": 1080,
+    "overflow": false,
+    "bodyScroll": {
+      "x": 1920,
+      "y": 1080
+    }
+  },
+  "laptop_title": {
+    "err": null,
+    "d": {
+      "internal": "480x270",
+      "scale": 2,
+      "css": "960x540"
+    },
+    "mode": "title",
+    "booted": true,
+    "strip": false,
+    "note": false,
+    "app": {
+      "w": 980,
+      "h": 768
+    },
+    "wrap": {
+      "w": 960,
+      "h": 540
+    },
+    "help": {
+      "w": 960,
+      "h": 78,
+      "top": 712.28125
+    },
+    "titleVisible": true,
+    "vh": 768,
+    "vw": 1366,
+    "overflow": false,
+    "bodyScroll": {
+      "x": 1366,
+      "y": 768
+    }
+  },
+  "laptop_ingame": {
+    "mode": "play",
+    "d": {
+      "internal": "480x270",
+      "scale": 2,
+      "css": "960x540"
+    },
+    "hudOn": true,
+    "titleHidden": true,
+    "helpBottom": 712.28125,
+    "wrapBottom": 630.09375,
+    "vh": 768,
+    "overflow": false,
+    "bodyScroll": {
+      "x": 1366,
+      "y": 768
+    }
+  }
+}

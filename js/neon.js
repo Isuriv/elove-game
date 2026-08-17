@@ -1,5 +1,5 @@
 /* Procedural neon synthwave backgrounds matching reference aesthetic */
-import { CFG } from "./config.js";
+import { CFG } from "./config.js?v=play-freeze-20260815";
 
 function canvas(w, h) {
   const c = document.createElement("canvas");
@@ -376,12 +376,22 @@ export function bakeCableBundle() {
 
 /** Faux-3D isometric power-up crystals / cells (still 2D sprites). */
 export function bakeIsoPowerups() {
+  const candies = {
+    lollipop: bakeCollectibleCandy(16, "lollipop"),
+    "candy-cane": bakeCollectibleCandy(16, "candy-cane"),
+    gumdrop: bakeCollectibleCandy(16, "gumdrop"),
+    "wrapped-chocolate": bakeCollectibleCandy(16, "wrapped-chocolate"),
+    "jelly-bean": bakeCollectibleCandy(16, "jelly-bean"),
+    hard: bakeCollectibleCandy(16, "hard"),
+  };
   return {
     shield: bakeIsoGem(14, "#00e8ff", "#7efcff", "#104858"),
     battery: bakeIsoCell(14),
     heart: bakeIsoHeart(14),
     magnet: bakeIsoMagnet(14),
-    toffee: bakeCollectibleToffee(16),
+    candy: candies.lollipop,
+    candies,
+    toffee: candies["wrapped-chocolate"], // legacy alias
     toy: bakeCollectibleToy(16),
     "moon-rock": bakeCollectibleMoonRock(16),
     "mars-rock": bakeCollectibleMarsRock(16),
@@ -391,6 +401,9 @@ export function bakeIsoPowerups() {
     gear: bakeCollectibleGear(16),
     engineering: bakeCollectibleEngineering(16),
     "helper-droid": bakeCollectibleHelperDroid(16),
+    "gun-pistol": bakeIsoPinkGun(16, "pistol"),
+    "gun-blaster": bakeIsoPinkGun(16, "blaster"),
+    "gun-cannon": bakeIsoPinkGun(16, "cannon"),
   };
 }
 
@@ -399,29 +412,178 @@ function bakeCollectibleClue(size) {
   return bakeIsoHeart(size);
 }
 
-function bakeCollectibleToffee(size) {
+/** Pink blaster pickup fallback (chunky neon pixel, black outline). */
+function bakeIsoPinkGun(size, variant) {
+  const { c, ctx } = canvas(size, size);
+  ctx.clearRect(0, 0, size, size);
+  const ink = "#000000";
+  const body = "#ff2ea6";
+  const light = "#ff9ad5";
+  const dark = "#c01870";
+  const cyan = "#00e8ff";
+  const cream = "#fff5fb";
+
+  const rect = (x, y, w, h, fill) => {
+    ctx.fillStyle = fill;
+    ctx.fillRect(x, y, w, h);
+  };
+
+  switch (variant) {
+    case "pistol":
+      rect(2, 5, 11, 6, ink);
+      rect(4, 10, 4, 5, ink);
+      rect(3, 6, 9, 4, body);
+      rect(10, 7, 3, 2, body);
+      rect(4, 10, 3, 4, dark);
+      rect(4, 6, 4, 1, light);
+      rect(11, 7, 1, 1, cream);
+      rect(7, 8, 1, 1, cyan);
+      rect(5, 11, 1, 1, cyan);
+      break;
+    case "blaster":
+      rect(1, 5, 14, 6, ink);
+      rect(4, 10, 5, 5, ink);
+      rect(2, 6, 12, 4, body);
+      rect(12, 7, 3, 2, light);
+      rect(5, 10, 3, 4, dark);
+      rect(3, 6, 5, 1, light);
+      rect(6, 7, 2, 2, cyan);
+      rect(10, 8, 1, 1, cyan);
+      rect(8, 6, 2, 1, cream);
+      break;
+    case "cannon":
+      rect(1, 4, 14, 8, ink);
+      rect(3, 11, 6, 4, ink);
+      rect(2, 5, 12, 6, body);
+      rect(12, 6, 3, 4, dark);
+      rect(4, 11, 4, 3, dark);
+      rect(3, 5, 6, 2, light);
+      rect(7, 7, 3, 2, cyan);
+      rect(13, 7, 1, 2, cream);
+      rect(5, 12, 1, 1, cyan);
+      break;
+    default: {
+      const _exhaustive = variant;
+      void _exhaustive;
+      rect(2, 5, 11, 6, ink);
+      rect(3, 6, 9, 4, body);
+      break;
+    }
+  }
+  return c;
+}
+
+function bakeCollectibleCandy(size, kind) {
   const { c, ctx } = canvas(size, size);
   // Transparent plate - black outline hugs candy silhouette only
   ctx.clearRect(0, 0, size, size);
-  // Wrapper ends
-  ctx.fillStyle = "#000000";
-  ctx.fillRect(1, 5, 4, 6);
-  ctx.fillRect(size - 5, 5, 4, 6);
-  ctx.fillStyle = "#ff6ec7";
-  ctx.fillRect(2, 6, 3, 4);
-  ctx.fillRect(size - 5, 6, 3, 4);
-  ctx.fillStyle = "#ffe0f0";
-  ctx.fillRect(2, 6, 1, 1);
-  ctx.fillRect(size - 3, 6, 1, 1);
-  // Caramel body + black rim
-  ctx.fillStyle = "#000000";
-  ctx.fillRect(4, 3, size - 8, size - 6);
-  ctx.fillStyle = "#ffb040";
-  ctx.fillRect(5, 4, size - 10, size - 8);
-  ctx.fillStyle = "#ffd078";
-  ctx.fillRect(6, 5, size - 13, 3);
-  ctx.fillStyle = "#fff4d0";
-  ctx.fillRect(6, 5, 1, 1);
+  switch (kind) {
+    case "lollipop": {
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(size / 2 - 1, size - 6, 2, 5);
+      ctx.fillStyle = "#ffe0f0";
+      ctx.fillRect(size / 2 - 1, size - 5, 1, 4);
+      ctx.fillStyle = "#000000";
+      ctx.beginPath();
+      ctx.arc(size / 2, size / 2 - 1, size / 2 - 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#ff6ec7";
+      ctx.beginPath();
+      ctx.arc(size / 2, size / 2 - 1, size / 2 - 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#ffe0f0";
+      ctx.fillRect(size / 2 - 2, size / 2 - 3, 3, 2);
+      ctx.fillStyle = "#00e8ff";
+      ctx.fillRect(size / 2 + 2, size / 2 - 4, 1, 1);
+      break;
+    }
+    case "candy-cane": {
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(3, 2, 3, size - 4);
+      ctx.fillRect(3, 2, 8, 3);
+      ctx.fillStyle = "#ff6ec7";
+      ctx.fillRect(4, 3, 1, size - 6);
+      ctx.fillRect(4, 3, 6, 1);
+      ctx.fillStyle = "#fff5fb";
+      ctx.fillRect(5, 5, 1, 2);
+      ctx.fillRect(5, 9, 1, 2);
+      break;
+    }
+    case "gumdrop": {
+      ctx.fillStyle = "#000000";
+      ctx.beginPath();
+      ctx.ellipse(size / 2, size / 2 + 1, size / 2 - 2, size / 2 - 3, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#ff2ea6";
+      ctx.beginPath();
+      ctx.ellipse(size / 2, size / 2 + 1, size / 2 - 3, size / 2 - 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#ffe066";
+      ctx.fillRect(size / 2 - 2, size / 2 - 3, 2, 1);
+      break;
+    }
+    case "jelly-bean": {
+      ctx.fillStyle = "#000000";
+      ctx.beginPath();
+      ctx.ellipse(size / 2, size / 2, size / 2 - 2, size / 2 - 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#00e8ff";
+      ctx.beginPath();
+      ctx.ellipse(size / 2, size / 2, size / 2 - 3, size / 2 - 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(size / 2 - 2, size / 2 - 2, 2, 1);
+      break;
+    }
+    case "hard": {
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(1, 5, 3, 5);
+      ctx.fillRect(size - 4, 5, 3, 5);
+      ctx.fillStyle = "#ff7ec8";
+      ctx.fillRect(2, 6, 2, 3);
+      ctx.fillRect(size - 4, 6, 2, 3);
+      ctx.fillStyle = "#000000";
+      ctx.beginPath();
+      ctx.arc(size / 2, size / 2, size / 2 - 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#ffb0d8";
+      ctx.beginPath();
+      ctx.arc(size / 2, size / 2, size / 2 - 5, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+    }
+    case "wrapped-chocolate": {
+      // Wrapped chocolate candy
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(1, 5, 4, 6);
+      ctx.fillRect(size - 5, 5, 4, 6);
+      ctx.fillStyle = "#ff6ec7";
+      ctx.fillRect(2, 6, 3, 4);
+      ctx.fillRect(size - 5, 6, 3, 4);
+      ctx.fillStyle = "#ffe0f0";
+      ctx.fillRect(2, 6, 1, 1);
+      ctx.fillRect(size - 3, 6, 1, 1);
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(4, 3, size - 8, size - 6);
+      ctx.fillStyle = "#ffb040";
+      ctx.fillRect(5, 4, size - 10, size - 8);
+      ctx.fillStyle = "#ffd078";
+      ctx.fillRect(6, 5, size - 13, 3);
+      ctx.fillStyle = "#fff4d0";
+      ctx.fillRect(6, 5, 1, 1);
+      break;
+    }
+    default: {
+      const _exhaustive = kind;
+      void _exhaustive;
+      // Unknown kind - draw wrapped chocolate shape
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(4, 3, size - 8, size - 6);
+      ctx.fillStyle = "#ffb040";
+      ctx.fillRect(5, 4, size - 10, size - 8);
+      break;
+    }
+  }
   return c;
 }
 
@@ -1543,7 +1705,7 @@ export function bakeBoringDrill(w = 320, h = 240) {
   return c;
 }
 
-/** Procedural Boring Loop cars (Imagine fallback) - face right; runtime flips for left zoom */
+/** Procedural Boring Loop cars (Imagine fallback) - face right; runtime scrolls left (no flip) */
 export function bakeBoringVehicleSet() {
   const sedan = (() => {
     const { c, ctx } = canvas(30, 14);

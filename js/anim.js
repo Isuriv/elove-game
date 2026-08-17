@@ -17,7 +17,8 @@ export const DEFAULT_HOLDS = {
 };
 
 export function holdFor(holds, state, index = 0, defaults = DEFAULT_HOLDS) {
-  const raw = holds?.[state] ?? defaults[state] ?? defaults.float ?? 150;
+  const table = defaults || DEFAULT_HOLDS;
+  const raw = holds?.[state] ?? table[state] ?? table.float ?? 150;
   if (Array.isArray(raw)) return Math.max(40, raw[index % raw.length] ?? raw[0] ?? 150);
   return Math.max(40, Number(raw) || 150);
 }

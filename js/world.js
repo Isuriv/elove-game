@@ -1,5 +1,5 @@
 /* Side-scroller platform map + collision */
-import { CFG, TILE, isPlatformTile } from "./config.js";
+import { CFG, TILE, isPlatformTile } from "./config.js?v=play-freeze-20260815";
 
 export const World = (() => {
   const W = 96;
@@ -204,6 +204,48 @@ export const World = (() => {
     };
   }
 
+  /**
+   * Contiguous walkable pads from the current map (floating plats + solid floor).
+   * Each pad: { x0, x1, ty, kind: "plat"|"floor" } in tile coords (inclusive x).
+   * Skips side-wall columns; does not treat EXIT as a pad surface.
+   */
+  function walkPads() {
+    const pads = [];
+    const floorTy = H - 2;
+    for (let ty = 1; ty < H - 1; ty++) {
+      let runStart = null;
+      let runKind = null;
+      const flush = (endX) => {
+        if (runStart == null) return;
+        const x0 = Math.max(runStart, 1);
+        const x1 = Math.min(endX, W - 2);
+        if (x1 >= x0) pads.push({ x0, x1, ty, kind: runKind });
+        runStart = null;
+        runKind = null;
+      };
+      for (let tx = 0; tx < W; tx++) {
+        const t = map[ty][tx];
+        let kind = null;
+        if (isPlatformTile(t)) kind = "plat";
+        else if (t === TILE.SOLID && ty === floorTy) kind = "floor";
+        if (kind) {
+          if (runStart == null) {
+            runStart = tx;
+            runKind = kind;
+          } else if (kind !== runKind) {
+            flush(tx - 1);
+            runStart = tx;
+            runKind = kind;
+          }
+        } else {
+          flush(tx - 1);
+        }
+      }
+      flush(W - 1);
+    }
+    return pads;
+  }
+
   return {
     W,
     H,
@@ -215,6 +257,7 @@ export const World = (() => {
     worldToTile,
     spawnPoint,
     exitRect,
+    walkPads,
     pixelW: () => W * CFG.TILE,
     pixelH: () => H * CFG.TILE,
   };

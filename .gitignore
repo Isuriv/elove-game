@@ -1,4 +1,12 @@
 .DS_Store
+Thumbs.db
+Desktop.ini
 node_modules/
 .idea/
 *.log
+.env
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+_tmp_*

@@ -1,9 +1,9 @@
 /* ELOVE GAME - 2D canvas entry */
 import { AudioFX } from "./audio.js";
-import { Game } from "./game.js?v=coding-fixes-20260811f";
-import { Scene2D } from "./render2d.js?v=coding-fixes-20260811f";
-import { preloadArt } from "./assets.js?v=coding-fixes-20260811f";
-import { isDebugMode, unlockAllLevels } from "./levels.js?v=coding-fixes-20260811f";
+import { Game } from "./game.js?v=rainbow-bolts-20260816b";
+import { Scene2D } from "./render2d.js?v=rainbow-bolts-20260816b";
+import { preloadArt } from "./assets.js?v=play-freeze-20260815";
+import { isDebugMode, unlockAllLevels } from "./levels.js?v=play-freeze-20260815";
 
 const wrap = document.getElementById("game-wrap");
 
@@ -40,6 +40,7 @@ const hud = {
   endSub: document.getElementById("end-sub"),
   endClueNote: document.getElementById("end-clue-note"),
   endClueText: document.getElementById("end-clue-text"),
+  endClueChannel: document.getElementById("end-clue-channel"),
   endBest: document.getElementById("end-best"),
   endHint: document.getElementById("end-hint"),
 };
@@ -47,7 +48,7 @@ const hud = {
 const scene = new Scene2D(wrap);
 Game.bind(scene, hud);
 // Editing / capture hooks (matches __ELOVE_ART / __ELOVE_DISPLAY)
-window.__ELOVE = { Game, scene };
+window.__ELOVE = { Game, scene, booted: false };
 
 for (const btn of hud.levelBtns) {
   btn.addEventListener("click", (e) => {
@@ -102,12 +103,17 @@ window.addEventListener("pointerdown", () => AudioFX.ensure());
 function frame(now) {
   const dt = Math.min(50, now - lastMs);
   lastMs = now;
-  if (bootstrapped) {
-    pollKeys();
-    Game.update(dt, now);
-    Game.render(now);
+  try {
+    if (bootstrapped) {
+      pollKeys();
+      Game.update(dt, now);
+      Game.render(now);
+    }
+    scene.render();
+  } catch (err) {
+    console.error(err);
+    window.__eloveErr = String(err?.message || err);
   }
-  scene.render();
   requestAnimationFrame(frame);
 }
 
@@ -192,6 +198,7 @@ async function boot() {
     Game.startLevel(2, { force: true });
   } else if (levelParam === 1) {
     Game.start({ levelId: 1 });
+    Game.startLevel(1, { force: true });
   } else if (debug) {
     // Debug editing session -> Cake Realm (use ?level=1 ... ?level=5 for others)
     Game.start({ levelId: 2 });
@@ -200,8 +207,9 @@ async function boot() {
   }
 
   bootstrapped = true;
+  window.__ELOVE.booted = true;
   const strip = document.getElementById("asset-strip");
-  if (strip) strip.classList.remove("hidden");
+  if (strip) strip.classList.add("hidden");
 }
 
 boot();

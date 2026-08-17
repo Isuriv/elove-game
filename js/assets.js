@@ -117,7 +117,7 @@ export function punchBlack(img, threshold = 18) {
   return c;
 }
 
-/** Knock out flat white / light-gray plates (e.g. toffee.png) to transparency. */
+/** Knock out flat white / light-gray plates (e.g. candy Imagine plates) to transparency. */
 export function punchWhite(img, threshold = 235) {
   if (!img) return null;
   const c = document.createElement("canvas");
@@ -139,7 +139,7 @@ export function punchWhite(img, threshold = 235) {
 
 /**
  * Flood-fill from edges: kill black / white / flat gray plates so only the
- * candy silhouette stays (fixes white-card toffees with box outlines).
+ * candy silhouette stays (fixes white-card candy plates with box outlines).
  */
 export function punchPlateEdges(img, { black = 40, white = 200, graySpread = 36 } = {}) {
   if (!img) return null;
@@ -1343,7 +1343,7 @@ function coolMoonPlate(img) {
 }
 
 export async function preloadArt() {
-  const { bakeNeonSet } = await import("./neon.js?v=toffee-fix-20260810c");
+  const { bakeNeonSet } = await import("./neon.js?v=play-freeze-20260815");
 
   const propPaths = [];
   for (let i = 1; i <= 34; i++) {
@@ -1835,7 +1835,7 @@ export async function preloadArt() {
   Art.neon = bakeNeonSet();
 
   // Cake Realm parallax - Grok Imagine / GenerateImage plates with neon bake fallback
-  const cakeVer = "cake-pastry-20260721c";
+  const cakeVer = "cake-candies-20260815";
   const pastryFiles = [
     "pastry-cupcake.png",
     "pastry-macaron.png",
@@ -1843,17 +1843,36 @@ export async function preloadArt() {
     "pastry-donut.png",
     "pastry-slice.png",
   ];
-  const [cakeSkyImg, cakeMtnImg, cakeMidImg, cakeCloudImg, cakeFgImg, ...pastryImgs] =
-    await Promise.all([
-      loadOptional(`${IMAGINE}/cake/cake-sky-far.png?v=${cakeVer}`),
-      loadOptional(`${IMAGINE}/cake/cake-mountains.png?v=${cakeVer}`),
-      loadOptional(`${IMAGINE}/cake/cake-midscape.png?v=${cakeVer}`),
-      loadOptional(`${IMAGINE}/cake/cake-cloud.png?v=${cakeVer}`),
-      loadOptional(`${IMAGINE}/cake/cake-fg-accent.png?v=${cakeVer}`),
-      ...pastryFiles.map((f) =>
-        loadOptional(`${IMAGINE}/cake/${f}?v=${cakeVer}`)
-      ),
-    ]);
+  const candyFiles = [
+    { kind: "lollipop", file: "candy-lollipop.png" },
+    { kind: "candy-cane", file: "candy-cane.png" },
+    { kind: "gumdrop", file: "candy-gumdrop.png" },
+    { kind: "wrapped-chocolate", file: "candy-wrapped-chocolate.png" },
+    { kind: "jelly-bean", file: "candy-jelly-bean.png" },
+    { kind: "hard", file: "candy-hard.png" },
+  ];
+  const [
+    cakeSkyImg,
+    cakeMtnImg,
+    cakeMidImg,
+    cakeCloudImg,
+    cakeFgImg,
+    ...cakeExtraImgs
+  ] = await Promise.all([
+    loadOptional(`${IMAGINE}/cake/cake-sky-far.png?v=${cakeVer}`),
+    loadOptional(`${IMAGINE}/cake/cake-mountains.png?v=${cakeVer}`),
+    loadOptional(`${IMAGINE}/cake/cake-midscape.png?v=${cakeVer}`),
+    loadOptional(`${IMAGINE}/cake/cake-cloud.png?v=${cakeVer}`),
+    loadOptional(`${IMAGINE}/cake/cake-fg-accent.png?v=${cakeVer}`),
+    ...pastryFiles.map((f) =>
+      loadOptional(`${IMAGINE}/cake/${f}?v=${cakeVer}`)
+    ),
+    ...candyFiles.map((c) =>
+      loadOptional(`${IMAGINE}/cake/${c.file}?v=${cakeVer}`)
+    ),
+  ]);
+  const pastryImgs = cakeExtraImgs.slice(0, pastryFiles.length);
+  const candyImgs = cakeExtraImgs.slice(pastryFiles.length);
 
   function prepCakeFloater(img, maxW = 96) {
     if (!img) return null;
@@ -1886,6 +1905,50 @@ export async function preloadArt() {
       ? scalePlate(punchBlack(cakeFgImg, 22), 960)
       : cakeBake.foreground,
   };
+
+  /** Fit candy Imagine plate into a fixed box with silhouette outline (same as legacy toffee). */
+  function prepCandyCollectible(img) {
+    if (!img) return null;
+    const cleared = punchPlateEdges(imgToCanvas(img));
+    const trimmed = trimAlpha(cleared);
+    const box = 40;
+    const pad = 2;
+    const fit = Math.min(
+      (box - pad) / Math.max(1, trimmed.width),
+      (box - pad) / Math.max(1, trimmed.height)
+    );
+    const w = Math.max(1, Math.round(trimmed.width * fit));
+    const h = Math.max(1, Math.round(trimmed.height * fit));
+    const scaled = document.createElement("canvas");
+    scaled.width = w;
+    scaled.height = h;
+    const sctx = scaled.getContext("2d");
+    sctx.imageSmoothingEnabled = false;
+    sctx.clearRect(0, 0, w, h);
+    sctx.drawImage(trimmed, 0, 0, w, h);
+    const outlined = bakeHardOutline(scaled, SPRITE_OUTLINE_COLOR);
+    const c = document.createElement("canvas");
+    c.width = box;
+    c.height = box;
+    const ctx = c.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0, 0, box, box);
+    ctx.drawImage(
+      outlined,
+      ((box - outlined.width) / 2) | 0,
+      ((box - outlined.height) / 2) | 0
+    );
+    return c;
+  }
+
+  const candyMap = {};
+  for (let i = 0; i < candyFiles.length; i++) {
+    const { kind } = candyFiles[i];
+    const prepared = prepCandyCollectible(candyImgs[i]);
+    if (prepared) candyMap[kind] = prepared;
+  }
+  // Merged into Art.powerups after neon powerups init below
+  const cakeCandyCollectibles = { candyMap, candyFiles };
 
   // Boring Company parallax - real tunnel bore + horizon Loop traffic
   const boringVer = "tunnel-drill-left-20260809";
@@ -2262,6 +2325,23 @@ export async function preloadArt() {
   Art.cables = Art.neon.cables || [];
   Art.powerups = { ...(Art.neon.powerups || {}) };
 
+  // Cake Realm candy collectibles (Imagine plates under assets/imagine/cake/)
+  {
+    const { candyMap, candyFiles: kinds } = cakeCandyCollectibles;
+    const neonCandies = Art.neon.powerups?.candies || {};
+    for (const { kind } of kinds) {
+      if (!candyMap[kind] && neonCandies[kind]) candyMap[kind] = neonCandies[kind];
+    }
+    Art.powerups.candies = candyMap;
+    Art.powerups.candy =
+      candyMap.lollipop ||
+      candyMap[kinds[0]?.kind] ||
+      Art.neon.powerups?.candy ||
+      null;
+    // Legacy alias if anything still looks up toffee
+    if (Art.powerups.candy) Art.powerups.toffee = Art.powerups.candy;
+  }
+
   // Three.js -> pixelated neon powerups / guns (transparent alpha; see bake-*-3d.mjs)
   for (const key of [
     "shield",
@@ -2272,7 +2352,6 @@ export async function preloadArt() {
     "gun-pistol",
     "gun-blaster",
     "gun-cannon",
-    "toffee",
     "toy",
     "moon-rock",
     "mars-rock",
@@ -2288,7 +2367,6 @@ export async function preloadArt() {
     const teslaLoot =
       key === "gear" || key === "engineering" || key === "helper-droid";
     const collectible =
-      key === "toffee" ||
       key === "toy" ||
       key === "clue" ||
       key === "neuralink-device" ||
@@ -2302,67 +2380,35 @@ export async function preloadArt() {
           ? `${IMAGINE}/powerups/${key}.png?v=3d-rocks-20260725`
           : collectible
             ? key === "clue"
-              ? `${IMAGINE}/powerups/${key}.png?v=toffee-fix-20260810c`
+              ? `${IMAGINE}/powerups/${key}.png?v=cake-candies-20260815`
               : key === "neuralink-device"
                 ? `${IMAGINE}/powerups/${key}.png?v=neuralink-device-20260803`
                 : teslaLoot
                   ? `${IMAGINE}/powerups/${key}.png?v=l3-tesla-loot-20260804`
                   : spacexLoot
                     ? `${IMAGINE}/powerups/${key}.png?v=l4-elove-ascent-20260804`
-                    : key === "toffee"
-                      ? `${IMAGINE}/powerups/${key}.png?v=toffee-fix-20260810c`
-                      : `${IMAGINE}/powerups/${key}.png?v=collectibles-20260725`
+                    : `${IMAGINE}/powerups/${key}.png?v=collectibles-20260725`
             : key.startsWith("gun-")
-              ? `${IMAGINE}/powerups/${key}.png?v=3d-neon-turn-20260719`
+              ? `${IMAGINE}/powerups/${key}.png?v=pink-guns-20260815`
               : `${IMAGINE}/powerups/${key}.png?v=3d-neon-turn-20260719`
     );
     if (img) {
       // Transparent neon bakes - no black punch (preserves glow edges)
       // Imagine plates with solid black BG need punch (Neuralink / L3 Tesla loot / L4 tiles)
       const punch =
-        key === "cable" || key === "neuralink-device" || teslaLoot || spacexLoot;
-      if (key === "toffee") {
-        // Kill white/black card plate, then black outline on candy silhouette only
-        const cleared = punchPlateEdges(imgToCanvas(img));
-        const trimmed = trimAlpha(cleared);
-        const box = 40;
-        const pad = 2;
-        const fit = Math.min(
-          (box - pad) / Math.max(1, trimmed.width),
-          (box - pad) / Math.max(1, trimmed.height)
-        );
-        const w = Math.max(1, Math.round(trimmed.width * fit));
-        const h = Math.max(1, Math.round(trimmed.height * fit));
-        const scaled = document.createElement("canvas");
-        scaled.width = w;
-        scaled.height = h;
-        const sctx = scaled.getContext("2d");
-        sctx.imageSmoothingEnabled = false;
-        sctx.clearRect(0, 0, w, h);
-        sctx.drawImage(trimmed, 0, 0, w, h);
-        const outlined = bakeHardOutline(scaled, SPRITE_OUTLINE_COLOR);
-        const c = document.createElement("canvas");
-        c.width = box;
-        c.height = box;
-        const ctx = c.getContext("2d");
-        ctx.imageSmoothingEnabled = false;
-        ctx.clearRect(0, 0, box, box);
-        ctx.drawImage(
-          outlined,
-          ((box - outlined.width) / 2) | 0,
-          ((box - outlined.height) / 2) | 0
-        );
-        Art.powerups.toffee = c;
+        key === "cable" ||
+        key === "neuralink-device" ||
+        teslaLoot ||
+        spacexLoot ||
+        key.startsWith("gun-");
+      const fixed =
+        key === "cable"
+          ? prepSpriteFixed(img, 12, 28, true)
+          : prepSpriteFixed(img, 24, 24, punch);
+      if (key === "cable") {
+        Art.cables = [fixed, ...(Art.cables || [])];
       } else {
-        const fixed =
-          key === "cable"
-            ? prepSpriteFixed(img, 12, 28, true)
-            : prepSpriteFixed(img, 24, 24, punch);
-        if (key === "cable") {
-          Art.cables = [fixed, ...(Art.cables || [])];
-        } else {
-          Art.powerups[key] = fixed;
-        }
+        Art.powerups[key] = fixed;
       }
     }
   }

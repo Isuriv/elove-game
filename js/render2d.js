@@ -1,7 +1,7 @@
 /* Side-scroller canvas renderer - 480x270 native resolution */
-import { CFG, TILE, isPlatformTile } from "./config.js?v=toffee-fix-20260810c";
-import { World } from "./world.js";
-import { Art, bakeHardOutline, SPRITE_OUTLINE_COLOR, PLAYER_TARGET_H } from "./assets.js?v=toffee-fix-20260810c";
+import { CFG, TILE, isPlatformTile } from "./config.js?v=rainbow-bolts-20260816b";
+import { World } from "./world.js?v=play-freeze-20260815";
+import { Art, bakeHardOutline, SPRITE_OUTLINE_COLOR, PLAYER_TARGET_H } from "./assets.js?v=play-freeze-20260815";
 import { frameAt } from "./anim.js";
 import { makeTiles, makeLootSprites, makeMarkerGlow } from "./sprites.js";
 
@@ -9,6 +9,17 @@ const VIEW_SCALE = CFG.VIEW_SCALE;
 const T = CFG.TILE;
 const RES_W = CFG.INTERNAL_W;
 const RES_H = CFG.INTERNAL_H;
+
+/** Mix a hex color toward white for a still-tinted bolt core. */
+function hexTint(hex, towardWhite = 0.5) {
+  const n = String(hex || "").replace("#", "");
+  if (n.length < 6) return "#ffffff";
+  const r = parseInt(n.slice(0, 2), 16);
+  const g = parseInt(n.slice(2, 4), 16);
+  const b = parseInt(n.slice(4, 6), 16);
+  const mix = (c) => Math.min(255, Math.round(c + (255 - c) * towardWhite));
+  return `rgb(${mix(r)}, ${mix(g)}, ${mix(b)})`;
+}
 
 /** Street props placed on ground / platforms (disabled - keep powerups/background only) */
 const DECOR = [];
@@ -74,7 +85,7 @@ export class Scene2D {
   }
 
   _resize() {
-    // Fixed 480x270 framebuffer; CSS nearest-neighbor integer upscale toward HD.
+    // Fixed 480x270 framebuffer; CSS nearest-neighbor integer upscale (cap x3).
     this.cssW = RES_W;
     this.cssH = RES_H;
     if (this.canvas.width !== RES_W || this.canvas.height !== RES_H) {
@@ -86,23 +97,52 @@ export class Scene2D {
     const wrap = this.wrap;
     if (!wrap) return;
 
-    // Full viewport (chrome floats). Use clientWidth/Height so a true 1920x1080
-    // window hits x4 without padding eating the last pixels.
-    const availW = Math.max(320, document.documentElement.clientWidth || window.innerWidth);
-    const availH = Math.max(180, document.documentElement.clientHeight || window.innerHeight);
+    const root = document.documentElement;
+    const vw = Math.max(320, root.clientWidth || window.innerWidth);
+    const vh = Math.max(180, root.clientHeight || window.innerHeight);
+    const app = document.getElementById("app");
+    const topbar = document.querySelector("#app > .topbar");
+    const help = document.querySelector("#app > .hud-help");
+    const appCss = app ? getComputedStyle(app) : null;
+    const padX = appCss
+      ? (parseFloat(appCss.paddingLeft) || 0) + (parseFloat(appCss.paddingRight) || 0)
+      : 20;
+    const padY = appCss
+      ? (parseFloat(appCss.paddingTop) || 0) + (parseFloat(appCss.paddingBottom) || 0)
+      : 12;
+    const gap = appCss && appCss.rowGap ? parseFloat(appCss.rowGap) || 0 : 4;
 
-    // Largest integer scale that fits (x4 = 1920x1080 HD when viewport allows).
-    const scale = Math.max(1, Math.min(Math.floor(availW / RES_W), Math.floor(availH / RES_H)));
+    let maxScale = CFG.DISPLAY_MAX_SCALE || 3;
+    try {
+      const forced = Number(new URLSearchParams(location.search).get("scale"));
+      if (Number.isFinite(forced) && forced >= 1 && forced <= 4) maxScale = Math.floor(forced);
+    } catch (_err) {
+      /* keep DISPLAY_MAX_SCALE */
+    }
+
+    const availW = Math.max(320, vw - padX);
+    const maxByWidth = Math.max(1, Math.min(maxScale, Math.floor(availW / RES_W)));
+    // Size the stage first so the controls panel wraps at the candidate width.
+    wrap.style.width = `${RES_W * maxByWidth}px`;
+    wrap.style.maxWidth = "none";
+    wrap.style.aspectRatio = "auto";
+
+    const chromeH =
+      (topbar ? topbar.offsetHeight : 0) +
+      (help ? help.offsetHeight : 0) +
+      padY +
+      gap * 2;
+    const availH = Math.max(180, vh - chromeH);
+
+    const scale = Math.max(1, Math.min(maxByWidth, Math.floor(availH / RES_H)));
     const dw = RES_W * scale;
     const dh = RES_H * scale;
 
     wrap.style.width = `${dw}px`;
     wrap.style.height = `${dh}px`;
-    wrap.style.maxWidth = "none";
-    wrap.style.aspectRatio = "auto";
-    // Exact CSS pixels (not %) so 480x270 -> 2x/3x/4x never goes fractional
     this.canvas.style.width = `${dw}px`;
     this.canvas.style.height = `${dh}px`;
+    if (app) app.style.width = `${dw + padX}px`;
     this.displayScale = scale;
     if (typeof window !== "undefined") {
       window.__ELOVE_DISPLAY = { internal: `${RES_W}x${RES_H}`, scale, css: `${dw}x${dh}` };
@@ -709,8 +749,8 @@ export class Scene2D {
   }
 
   /**
-   * Horizon Loop traffic - cars zoom left near the road band.
-   * Sprites face right; flip for leftward travel + amber headlight streak.
+   * Horizon Loop traffic - all cars face + travel right ("forward").
+   * Sprites already face right; no flip, no opposing lanes.
    */
   _drawBoringVehicles(ctx, now) {
     const vehicles = Art.boring?.vehicles || Art.neon?.boring?.vehicles || [];
@@ -739,21 +779,17 @@ export class Scene2D {
       const span = this.cssW + w + 64;
       const t = now * f.speed + f.phase * span;
       const progress = ((t % span) + span) % span;
+      // Progress 0->span maps right edge -> left (travel left; art stays right-facing)
       const x = Math.floor(this.cssW + 20 - progress - this.camX * f.parallax);
       const y = Math.floor(this.cssH * f.y);
-      // Amber headlight streak (cars travel left)
+      // Amber headlight streak on nose (right / facing side)
       ctx.globalCompositeOperation = "lighter";
       ctx.globalAlpha = 0.38;
       ctx.fillStyle = "#E8A84A";
       ctx.fillRect(x + w - 2, y + Math.floor(h * 0.45), f.trail, 2);
       ctx.globalCompositeOperation = "source-over";
       ctx.globalAlpha = 0.72;
-      // Flip: art faces right -> leftward zoom
-      ctx.save();
-      ctx.translate(x + w, y);
-      ctx.scale(-1, 1);
-      ctx.drawImage(spr, 0, 0, w, h);
-      ctx.restore();
+      ctx.drawImage(spr, x, y, w, h);
     }
     ctx.restore();
   }
@@ -2666,6 +2702,66 @@ export class Scene2D {
     ctx.restore();
   }
 
+  _drawBolt(ctx, b, sx, sy) {
+    const col = b.color || CFG.COLORS.cyan;
+    const ang = Math.atan2(b.vy || 0, b.vx || 1);
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    if (b.rainbow) {
+      const core = hexTint(col, 0.22);
+      ctx.globalCompositeOperation = "source-over";
+      for (let i = 4; i >= 1; i--) {
+        const tx = sx - (b.vx || 0) * VIEW_SCALE * i * 1.15;
+        const ty = sy - (b.vy || 0) * VIEW_SCALE * i * 1.15;
+        ctx.globalAlpha = 0.2 + (4 - i) * 0.1;
+        ctx.fillStyle = col;
+        ctx.beginPath();
+        ctx.ellipse(tx, ty, 7 + i * 0.35, 3.1, ang, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 0.5;
+      ctx.globalCompositeOperation = "lighter";
+      ctx.fillStyle = col;
+      ctx.beginPath();
+      ctx.ellipse(sx, sy, 12, 5.5, ang, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.globalCompositeOperation = "source-over";
+      ctx.shadowColor = col;
+      ctx.shadowBlur = 8;
+      ctx.fillStyle = col;
+      ctx.beginPath();
+      ctx.ellipse(sx, sy, 9, 4, ang, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = core;
+      ctx.beginPath();
+      ctx.ellipse(
+        sx + Math.cos(ang) * 1.4,
+        sy + Math.sin(ang) * 1.4,
+        3.4,
+        1.6,
+        ang,
+        0,
+        Math.PI * 2
+      );
+      ctx.fill();
+    } else {
+      ctx.fillStyle = col;
+      ctx.shadowColor = col;
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.ellipse(sx, sy, 7, 3, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = "#fff";
+      ctx.beginPath();
+      ctx.ellipse(sx + 1, sy, 3, 1.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
   _drawMarkers(ctx, inventory, now) {
     if (!inventory.cleared) return;
     const er = World.exitRect();
@@ -2849,17 +2945,24 @@ export class Scene2D {
           });
           ctx.imageSmoothingEnabled = prevSmooth;
           ctx.imageSmoothingQuality = prevQ;
-        } else if (d.item.type === "toffee" && Art.powerups?.toffee) {
-          // Cake toffees - transparent silhouette + black outline, heart-sized spin
-          const angle = now * 0.0032 + (d.item.x || 0) * 0.05;
-          const cosA = Math.cos(angle);
-          const facing = cosA >= 0 ? 1 : -1;
-          const squashX = Math.max(0.22, Math.abs(cosA));
-          this._drawSprite(ctx, Art.powerups.toffee, d.item.x, d.item.y, facing, bob, {
-            scale: 0.4,
-            foot: 6,
-            squashX,
-          });
+        } else if (d.item.type === "candy") {
+          // Cake candies - transparent silhouette + black outline, heart-sized spin
+          const kind = d.item.candyKind;
+          const spr =
+            (kind && Art.powerups?.candies?.[kind]) ||
+            Art.powerups?.candy ||
+            Art.powerups?.toffee;
+          if (spr) {
+            const angle = now * 0.0032 + (d.item.x || 0) * 0.05;
+            const cosA = Math.cos(angle);
+            const facing = cosA >= 0 ? 1 : -1;
+            const squashX = Math.max(0.22, Math.abs(cosA));
+            this._drawSprite(ctx, spr, d.item.x, d.item.y, facing, bob, {
+              scale: 0.4,
+              foot: 6,
+              squashX,
+            });
+          }
         } else if (spr && Art.powerups?.[d.item.type] && d.item.type !== "sword") {
           // Continuous squash turntable for other neon 3D powerups / guns
           const angle = now * 0.0026 + (d.item.x || 0) * 0.04;
@@ -2928,25 +3031,12 @@ export class Scene2D {
       }
     }
 
-    // Neon gun auto-fire bolts
+    // Drone / helper / player rainbow bolts (same ellipse bolt, tinted by b.color)
     for (const b of this._bullets || []) {
       if (!b.alive) continue;
       const sx = Math.floor(b.x * VIEW_SCALE - this.camX * VIEW_SCALE);
       const sy = Math.floor(b.y * VIEW_SCALE - this.camY * VIEW_SCALE);
-      ctx.save();
-      ctx.globalCompositeOperation = "lighter";
-      ctx.fillStyle = b.color || CFG.COLORS.cyan;
-      ctx.shadowColor = CFG.COLORS.neonPink;
-      ctx.shadowBlur = 8;
-      ctx.beginPath();
-      ctx.ellipse(sx, sy, 7, 3, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.shadowBlur = 0;
-      ctx.fillStyle = "#fff";
-      ctx.beginPath();
-      ctx.ellipse(sx + 1, sy, 3, 1.5, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
+      this._drawBolt(ctx, b, sx, sy);
     }
 
     // Elove waits at the helm (drawn after platforms/enemies so he reads clearly)

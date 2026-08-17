@@ -40,11 +40,6 @@ const ITEMS = [
     prompt:
       "Game sprite, solid pure black background #000000, vertical pixel art hanging cyberpunk cable wire dangling down, frayed tip, neon magenta cyan accents on dark cable, chunky pixels, no text, suitable as a platform decoration",
   },
-  {
-    file: "toffee.png",
-    prompt:
-      "Game sprite collectible, solid pure black background #000000 ONLY (no white, no gray, no checkerboard, no shadow, no ground), chunky cute pixel art wrapped toffee candy pickup, caramel orange center with pink twisted wrapper ends, soft yellow highlight, clean silhouette, centered, no text no HUD",
-  },
 ];
 
 async function generateOne(apiKey, item) {
@@ -80,7 +75,7 @@ async function main() {
   if (!apiKey) {
     console.error("Missing XAI_API_KEY");
     console.error('  $env:XAI_API_KEY = "xai-..."');
-    console.error("  npm run imagine:powerups -- toffee");
+    console.error("  npm run imagine:powerups -- shield");
     process.exit(1);
   }
   await fs.mkdir(OUT, { recursive: true });

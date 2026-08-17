@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ELOVE GAME - Side Scroller</title>
-  <link rel="stylesheet" href="css/style.css?v=ascii-plain-20260810" />
+  <link rel="stylesheet" href="css/style.css?v=holo-notes-20260816c" />
   <link rel="preload" as="image" href="assets/game/nars-landscape.jpg" />
 </head>
 <body>
@@ -64,16 +64,6 @@
           <p class="hint">Select level - <kbd>Enter</kbd> / <kbd>J</kbd> to start</p>
           <p id="title-best" class="best"></p>
           <p id="title-toast" class="title-toast hidden"></p>
-          <div id="asset-strip" class="asset-strip hidden" aria-label="Art packs">
-            <img src="assets/imagine/sheets/player-cat-rocket.png?v=2026-07-16T18:12:56.210Z" alt="Cat rocket sheet" />
-            <img src="assets/imagine/sheets/enemy-drone.png?v=drone-half-size-20260720" alt="Drone sheet" />
-            <img src="assets/imagine/sheets/enemy-cyborg.png?v=2026-07-16T18:12:56.210Z" alt="Cyborg sheet" />
-            <img src="assets/imagine/sheets/enemy-optimus.png?v=optimus-enemy-20260723" alt="Optimus sheet" />
-            <img src="assets/imagine/sheets/enemy-carbot.png?v=carbot-boss-20260723" alt="Carbot boss sheet" />
-            <img src="assets/imagine/sheets/enemy-rocket.png?v=rocket-boss-20260724" alt="Rocket boss sheet" />
-            <img src="assets/imagine/sheets/pickup-blade.png?v=2026-07-16T18:12:56.210Z" alt="Blade sheet" />
-          </div>
-          <p class="asset-note">Player: clean per-anim Grok videos - Optimus - L2.5 Boring - L2.5.5 Neuralink OR - L3 Carbot - L4 Rocket boss - L4.5 Moon - L5 Elove</p>
         </div>
       </div>
 
@@ -106,14 +96,30 @@
         <div class="end-card">
           <h2 id="end-title">CLEARED!</h2>
           <p id="end-sub"></p>
-          <div id="end-clue-note" class="end-clue-note hidden" aria-label="Assembled clue note">
-            <img
-              id="end-clue-paper"
-              src="assets/imagine/clues/clue-summary-paper.png?v=ultra-earth-paper-clue-20260802"
-              alt=""
-              draggable="false"
-            />
-            <p id="end-clue-text" class="end-clue-text"></p>
+          <div id="end-clue-note" class="end-clue-note hidden" data-level="1" aria-label="Holographic message from Elove">
+            <div class="holo-rig">
+              <img
+                id="end-clue-paper"
+                class="holo-plate"
+                src="assets/imagine/clues/holo-comm-panel.png?v=holo-notes-20260816"
+                alt=""
+                draggable="false"
+              />
+              <div class="holo-figure">
+                <img
+                  id="end-clue-elove"
+                  src="assets/imagine/clues/holo-elove.png?v=holo-notes-20260816"
+                  alt=""
+                  draggable="false"
+                />
+              </div>
+              <div class="holo-scanlines" aria-hidden="true"></div>
+              <div class="holo-header">
+                <span class="holo-status">Incoming holo-mail</span>
+                <span id="end-clue-channel" class="holo-channel">From: Elove</span>
+              </div>
+              <p id="end-clue-text" class="end-clue-text"></p>
+            </div>
           </div>
           <p id="end-best" class="best"></p>
           <p id="end-hint" class="hint">Press <kbd>R</kbd> to run again</p>
@@ -132,11 +138,11 @@
         <li><kbd>F</kbd> - Force-warp toss</li>
         <li><kbd>R</kbd> - Restart</li>
         <li><kbd>M</kbd> - Mute</li>
+        <li><a href="gallery.html">Asset gallery -></a></li>
       </ul>
-      <p style="margin:12px 0 0;font-size:0.8rem"><a href="gallery.html" style="color:var(--cyan)">Asset gallery -></a></p>
     </aside>
   </div>
 
-  <script type="module" src="js/main.js?v=coding-fixes-20260811f"></script>
+  <script type="module" src="js/main.js?v=rainbow-bolts-20260816b"></script>
 </body>
 </html>

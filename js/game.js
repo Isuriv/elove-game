@@ -1,8 +1,8 @@
-/* Side-scroller combat run - clear drones, cyborgs, Optimus, L3 Carbot & L4 Rocket bosses, reach exit */
-import { CFG, frameScale } from "./config.js?v=coding-fixes-20260811f";
-import { World } from "./world.js";
-import { Art } from "./assets.js?v=coding-fixes-20260811f";
-import { Player, Cyborg, Drone, Optimus, Carbot, RocketBoss } from "./entities.js?v=coding-fixes-20260811f";
+/* Side-scroller combat run - clear drones, cyborgs, Optimus, reach exit */
+import { CFG, frameScale } from "./config.js?v=rainbow-bolts-20260816b";
+import { World } from "./world.js?v=play-freeze-20260815";
+import { Art } from "./assets.js?v=play-freeze-20260815";
+import { Player, Cyborg, Drone, Optimus, Carbot, RocketBoss } from "./entities.js?v=play-freeze-20260815";
 import { AudioFX } from "./audio.js";
 import {
   LEVELS,
@@ -11,13 +11,14 @@ import {
   unlockLevel,
   getLevelPhysics,
   BASE_PHYSICS,
-} from "./levels.js?v=coding-fixes-20260811f";
+} from "./levels.js?v=play-freeze-20260815";
 import {
   LEVEL_ENEMY_SPAWNS,
   BASE_LOOT,
   LEVEL_EXTRA_LOOT,
+  CANDY_KINDS,
   getProgression,
-} from "./level-data.js?v=coding-fixes-20260811f";
+} from "./level-data.js?v=play-freeze-20260815";
 
 export const Game = (() => {
   const STATE = {
@@ -28,11 +29,25 @@ export const Game = (() => {
     DEAD: "dead",
   };
 
+  const HOLO_CHANNELS = {
+    1: "CH-01 Ultra Earth",
+    2: "CH-02 Cake Realm",
+    2.5: "CH-2.5 Boring Co",
+    2.55: "CH-2.55 Neuralink",
+    3: "CH-03 Tesla Works",
+    4: "CH-04 SpaceX",
+    4.5: "CH-4.5 Moon",
+    5: "CH-05 Starship",
+  };
+
   let mode = STATE.TITLE;
   let player = null;
   let enemies = [];
   let loot = [];
   let bullets = [];
+  /** First gun pickup of a run scatters extras; processed after the loot loop. */
+  let pendingGunScatter = false;
+  let gunHueIndex = 0;
   /** Orbiting L3 helper droids that fire slow friendly bolts. */
   let helpers = [];
   let inventory = { sword: false, cleared: false };
@@ -173,26 +188,110 @@ export const Game = (() => {
     rocket: RocketBoss,
   };
 
-  function buildEnemies(id, floorY, platY) {
+  const BOSS_KINDS = { carbot: true, rocket: true };
+
+  /** Fisher–Yates; Math.random is fine for now (seed from run start if replay needed). */
+  function shuffleInPlace(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const tmp = arr[i];
+      arr[i] = arr[j];
+      arr[j] = tmp;
+    }
+    return arr;
+  }
+
+  function padLen(p) {
+    return p.x1 - p.x0 + 1;
+  }
+
+  function pickTileX(pad, margin, minTx = 0) {
+    const lo = Math.max(pad.x0 + margin, minTx);
+    const hi = pad.x1 - margin;
+    if (hi < lo) return Math.floor((pad.x0 + pad.x1) / 2);
+    return lo + Math.floor(Math.random() * (hi - lo + 1));
+  }
+
+  /**
+   * Randomize spawn XY onto walkable pads; keep cast order/kinds from LEVEL_ENEMY_SPAWNS.
+   * Bosses (carbot/rocket): long solid-floor pads on the right half (exit arena) so
+   * they stay fightable and do not soft-lock on thin floating plats.
+   */
+  function randomSpawnPoint(kind, pads, platY, usedXs) {
+    const isBoss = !!BOSS_KINDS[kind];
+    const isDrone = kind === "drone";
+    const spawnClearTx = 8; // keep clear of player spawn (~tile 3)
+    let pool;
+    if (isBoss) {
+      // Prefer right-side floor arenas (len >= 8); fall back to any long floor pad.
+      pool = pads.filter((p) => p.kind === "floor" && padLen(p) >= 8 && p.x0 >= 40);
+      if (!pool.length) pool = pads.filter((p) => p.kind === "floor" && padLen(p) >= 8);
+      if (!pool.length) pool = pads.filter((p) => p.kind === "floor" && padLen(p) >= 4);
+    } else if (isDrone) {
+      pool = pads.filter((p) => padLen(p) >= 2 && p.x1 >= spawnClearTx);
+    } else {
+      // Ground foes: plats or floor with patrol room; skip spawn corridor via minTx.
+      pool = pads.filter((p) => padLen(p) >= 3 && p.x1 >= spawnClearTx + 2);
+    }
+    if (!pool.length) pool = pads.slice();
+
+    const ranked = shuffleInPlace(pool.slice()).sort((a, b) => {
+      // Slight preference for pads farther from already-used X (spread).
+      const midA = (a.x0 + a.x1) / 2;
+      const midB = (b.x0 + b.x1) / 2;
+      const distA = usedXs.reduce((m, ux) => Math.min(m, Math.abs(midA - ux)), 99);
+      const distB = usedXs.reduce((m, ux) => Math.min(m, Math.abs(midB - ux)), 99);
+      return distB - distA;
+    });
+    const pad = ranked[0] || { x0: 20, x1: 24, ty: World.H - 2, kind: "floor" };
+    const margin = isBoss ? 2 : 1;
+    const minTx = isBoss ? 40 : spawnClearTx;
+    let tx = pickTileX(pad, margin, minTx);
+    // Nudge away from stacked spawns on the same tile.
+    for (let attempt = 0; attempt < 6 && usedXs.some((ux) => Math.abs(ux - tx) < 2); attempt++) {
+      tx = pickTileX(pad, margin, minTx);
+    }
+    usedXs.push(tx);
+
+    const x = tx * CFG.TILE + CFG.TILE * 0.5;
+    let y;
+    if (isDrone) {
+      // Hover a few tiles above the chosen pad lip (not inside ceiling).
+      const airTiles = 2.5 + Math.random() * 3;
+      y = Math.max(CFG.TILE * 2.5, pad.ty * CFG.TILE - airTiles * CFG.TILE);
+    } else {
+      y = platY(pad.ty);
+    }
+    return { x, y };
+  }
+
+  function buildEnemies(id, _floorY, platY) {
     const defs = LEVEL_ENEMY_SPAWNS[id] || LEVEL_ENEMY_SPAWNS[1];
-    return defs.map(([kind, xt, yMode, yArg]) => {
+    const pads = World.walkPads();
+    const usedXs = [];
+    return defs.map(([kind]) => {
       const Ctor = ENEMY_CTORS[kind];
-      let y;
-      if (yMode === "floor") y = floorY;
-      else if (yMode === "plat") y = platY(yArg);
-      else y = yArg * CFG.TILE;
-      return new Ctor(xt * CFG.TILE, y);
+      const { x, y } = randomSpawnPoint(kind, pads, platY, usedXs);
+      return new Ctor(x, y);
     });
   }
 
   function buildLoot(id) {
     const collectY = (ty) => ty * CFG.TILE - 6;
-    const toItem = (d) => ({
-      type: d.type,
-      x: d.x * CFG.TILE,
-      y: collectY(d.yTile),
-      taken: false,
-    });
+    let candyIdx = 0;
+    const toItem = (d) => {
+      const item = {
+        type: d.type,
+        x: d.x * CFG.TILE,
+        y: collectY(d.yTile),
+        taken: false,
+      };
+      if (d.type === "candy") {
+        item.candyKind = CANDY_KINDS[candyIdx % CANDY_KINDS.length];
+        candyIdx += 1;
+      }
+      return item;
+    };
     const items = BASE_LOOT.map(toItem);
     const extra = LEVEL_EXTRA_LOOT[id];
     if (extra) {
@@ -217,6 +316,8 @@ export const Game = (() => {
     loot = buildLoot(levelId);
     bullets = [];
     helpers = [];
+    pendingGunScatter = false;
+    gunHueIndex = 0;
     inventory = {
       sword: false,
       cleared: false,
@@ -226,6 +327,7 @@ export const Game = (() => {
       gunFireUntil: 0,
       gunNextShot: 0,
       gunType: null,
+      gunScattered: false,
       collects: 0,
       helpers: 0,
     };
@@ -323,21 +425,18 @@ export const Game = (() => {
     } else if (item.type === "magnet") {
       inventory.magnetUntil = now + 12000;
       showToast("Scrap magnet - pull loot closer!");
-    } else if (
-      item.type === "gun-pistol" ||
-      item.type === "gun-blaster" ||
-      item.type === "gun-cannon"
-    ) {
+    } else if (isGunLoot(item.type)) {
       inventory.gunType = item.type;
       inventory.gunFireUntil = now + CFG.GUN_FIRE_MS;
       inventory.gunNextShot = now;
-      const label =
-        item.type === "gun-pistol"
-          ? "Neon pistol"
-          : item.type === "gun-blaster"
-            ? "Cyan blaster"
-            : "Heavy cannon";
-      showToast(`${label} - auto-fire 3s!`);
+      const firstScatter = !item.noScatter && !inventory.gunScattered;
+      if (firstScatter) {
+        inventory.gunScattered = true;
+        pendingGunScatter = true;
+        showToast("Pink gun - rainbow bolts! Extra guns scattered!");
+      } else {
+        showToast("Pink gun - rainbow bolts!");
+      }
     } else if (item.type === "helper-droid") {
       inventory.collects = (inventory.collects || 0) + 1;
       inventory.helpers = (inventory.helpers || 0) + 1;
@@ -345,7 +444,7 @@ export const Game = (() => {
       showToast(`Helper droid online - shooting assist! x${inventory.helpers}`, 1200);
     } else if (
       item.type === "clue" ||
-      item.type === "toffee" ||
+      item.type === "candy" ||
       item.type === "toy" ||
       item.type === "moon-rock" ||
       item.type === "mars-rock" ||
@@ -355,11 +454,15 @@ export const Game = (() => {
       item.type === "engineering"
     ) {
       inventory.collects = (inventory.collects || 0) + 1;
+      if (item.type === "clue") {
+        player.maxHp += 1;
+        player.hp += 1;
+      }
       const label =
         item.type === "clue"
-          ? "Love note from Elove"
-          : item.type === "toffee"
-            ? "Toffee"
+          ? "Love note from Elove - +1 HP"
+          : item.type === "candy"
+            ? "Candy"
             : item.type === "toy"
               ? "Toy"
               : item.type === "moon-rock"
@@ -432,18 +535,83 @@ export const Game = (() => {
     }
   }
 
-  function spawnBullet() {
-    if (!player || !player.alive) return;
+  const GUN_LOOT_TYPES = ["gun-pistol", "gun-blaster", "gun-cannon"];
+
+  function isGunLoot(type) {
+    return (
+      type === "gun-pistol" || type === "gun-blaster" || type === "gun-cannon"
+    );
+  }
+
+  function rainbowBulletColor() {
+    const palette = CFG.RAINBOW_BULLET_COLORS;
+    const color = palette[gunHueIndex % palette.length];
+    gunHueIndex = (gunHueIndex + 1) % palette.length;
+    return color;
+  }
+
+  /** Burst of extra pink guns on walkable pads. Scattered loot sets noScatter. */
+  function scatterPinkGuns() {
+    const pads = World.walkPads();
+    const spawnClearTx = 8;
+    const playerTx = player ? Math.round(player.x / CFG.TILE) : 3;
+    const collectY = (ty) => ty * CFG.TILE - 6;
+    const usedXs = loot
+      .filter((item) => !item.taken)
+      .map((item) => Math.round(item.x / CFG.TILE));
+
+    const platPool = pads.filter(
+      (p) => p.kind === "plat" && padLen(p) >= 2 && p.x1 >= spawnClearTx
+    );
+    const floorPool = pads.filter(
+      (p) => p.kind === "floor" && padLen(p) >= 4 && p.x1 >= spawnClearTx
+    );
+    const pool = platPool.length ? platPool.concat(floorPool) : pads.slice();
+    shuffleInPlace(pool);
+
+    const want = CFG.GUN_SCATTER_COUNT;
+    let spawned = 0;
+    const maxAttempts = Math.max(24, pool.length * 6);
+    for (let attempt = 0; attempt < maxAttempts && spawned < want; attempt++) {
+      const pad = pool[attempt % pool.length];
+      if (!pad) break;
+      const tx = pickTileX(pad, 1, spawnClearTx);
+      if (tx < spawnClearTx) continue;
+      if (Math.abs(tx - playerTx) < 6) continue;
+      if (usedXs.some((ux) => Math.abs(ux - tx) < 2)) continue;
+      usedXs.push(tx);
+      loot.push({
+        type: GUN_LOOT_TYPES[spawned % GUN_LOOT_TYPES.length],
+        x: tx * CFG.TILE + CFG.TILE * 0.5,
+        y: collectY(pad.ty),
+        taken: false,
+        noScatter: true,
+      });
+      spawned += 1;
+    }
+  }
+
+  function updateGunFire(now) {
+    if (!inventory) return;
+    if (!inventory.gunType || now >= inventory.gunFireUntil) {
+      if (inventory.gunType && now >= inventory.gunFireUntil) inventory.gunType = null;
+      return;
+    }
+    if (mode !== STATE.PLAY || !player || !player.alive) return;
+    if (now < inventory.gunNextShot) return;
+    inventory.gunNextShot = now + CFG.GUN_FIRE_INTERVAL;
+    const dir = player.facing || 1;
     bullets.push({
-      x: player.x + player.facing * 14,
+      x: player.x + dir * 12,
       y: player.y - 4,
-      vx: player.facing * CFG.GUN_BULLET_SPEED,
+      vx: dir * CFG.GUN_BULLET_SPEED,
       vy: 0,
       alive: true,
       travel: 0,
       range: CFG.GUN_BULLET_RANGE,
       hostile: false,
-      color: CFG.COLORS.cyan,
+      color: rainbowBulletColor(),
+      rainbow: true,
     });
     AudioFX.shoot();
   }
@@ -515,24 +683,6 @@ export const Game = (() => {
     bullets = bullets.filter((b) => b.alive);
   }
 
-  function updateGunFire(now) {
-    if (!player || !player.alive) return;
-    if (now >= inventory.gunFireUntil) {
-      inventory.gunType = null;
-      return;
-    }
-    let shots = 0;
-    while (
-      inventory.gunNextShot <= now &&
-      inventory.gunNextShot < inventory.gunFireUntil &&
-      shots < 4
-    ) {
-      spawnBullet();
-      inventory.gunNextShot += CFG.GUN_FIRE_INTERVAL;
-      shots++;
-    }
-  }
-
   function interact(now) {
     if (!player || !player.alive || mode !== STATE.PLAY) return;
     for (const item of loot) {
@@ -565,9 +715,7 @@ export const Game = (() => {
         if (e.kind === "carbot" && e.pendingBullet) spawnDroneBullet(e.pendingBullet);
         if (e.kind === "rocket" && e.pendingBullet) spawnDroneBullet(e.pendingBullet);
       }
-      updateGunFire(now);
       updateHelpers(now, dt);
-      updateBullets(now, dt);
 
       for (const item of loot) {
         if (item.taken) continue;
@@ -585,6 +733,14 @@ export const Game = (() => {
           }
         }
       }
+
+      if (pendingGunScatter) {
+        pendingGunScatter = false;
+        scatterPinkGuns();
+      }
+
+      updateGunFire(now);
+      updateBullets(now, dt);
 
       if (aliveCount() === 0 && !inventory.cleared) {
         inventory.cleared = true;
@@ -898,9 +1054,9 @@ export const Game = (() => {
           : levelId === 4.5
             ? "Moon Bouncing - low gravity - higher jumps - board the STARSHIP"
             : levelId === 4
-              ? "SpaceX Ascent - purple grip - cyan ice - gold bounce - ROCKET BOSS - EXIT"
+              ? "SpaceX Ascent - purple grip - cyan ice - gold bounce - EXIT"
               : levelId === 3
-                ? "Tesla Works - purple grip - cyan ice - gold bounce - CARBOT BOSS - EXIT"
+                ? "Tesla Works - purple grip - cyan ice - gold bounce - EXIT"
                 : levelId === 2.55
                   ? "Neuralink - purple grip - cyan ice - gold bounce - EXIT"
                   : levelId === 2.5
@@ -937,29 +1093,35 @@ export const Game = (() => {
         : "Try again, Elove is still waiting for you.";
       if (hud.endClueNote) {
         hud.endClueNote.classList.toggle("hidden", !showClueNote);
+        hud.endClueNote.dataset.level = String(levelId);
         const endCard = hud.endOverlay?.querySelector(".end-card");
         endCard?.classList.toggle("has-clue-note", showClueNote);
         endCard?.classList.toggle("has-starship-interior", showStarshipInterior);
         endCard?.classList.toggle("has-mars-save", showMarsSave);
       }
+      if (hud.endClueChannel) {
+        hud.endClueChannel.textContent = showClueNote
+          ? HOLO_CHANNELS[levelId] || "From: Elove"
+          : "";
+      }
       if (hud.endClueText) {
         hud.endClueText.textContent =
           won && levelId === 1
-            ? "I hope you collected the kisses I left for you, a secret between us two. The next place will have kisses even more sweet, and you will get closer to when we meet! Keep up with me, and we will both be complete! Let's go on a trip, to see the beauty of Mars, and remember, never quit!"
+            ? "I hope you collected the kisses I left for you, a secret between us two. The next place will have kisses even more sweet, and you will get closer to when we meet! Keep up with me, and we will both be complete! Let's go on a trip, to see the beauty of Mars, and remember, never quit! - Your Dearest Elove"
             : won && levelId === 2
-              ? "You made it past the cake present my Love, but something seems to have happened to the robots, attacking from below and above! Be careful when you find me, I think I can deactivate them if you reach the exits, let me see if I can fix it! I had to evacuate to somewhere Boring, so keep exploring! -"
+              ? "You made it past the cake present my Love, but something seems to have happened to the robots, attacking from below and above! Be careful when you find me, I think I can deactivate them if you reach the exits, let me see if I can fix it! I had to evacuate to somewhere Boring, so keep exploring! - Your Dearest Elove"
               : won && levelId === 2.5
-                ? "I hope you were able to dodge Prufrock! Just like my love, it has you on lock! Be safe until I am able to link up with you, I will find out how to disable the robots, and make them brand new! I'm at the place where we connect our brains to theirs, so maybe I can make them more aware! Come to me soon, my love, just give the robots a powerful shove! -Your Dearest Elove"
+                ? "I hope you were able to dodge Prufrock! Just like my love, it has you on lock! Be safe until I am able to link up with you, I will find out how to disable the robots, and make them brand new! I'm at the place where we connect our brains to theirs, so maybe I can make them more aware! Come to me soon, my love, just give the robots a powerful shove! - Your Dearest Elove"
                 : won && levelId === 2.55
-                  ? "I'm at Tesla, grabbing a robotaxi, because I need to grab some music and treats, that will be very fancy. I managed to turn off the robots for the last few places you were in, we just need to make sure we're able to save all the other places before we go for a spin! Work hard, my love, and I will be there with you soon, you just need to pass these tests and I will make you swoon!"
+                  ? "I'm at Tesla, grabbing a robotaxi, because I need to grab some music and treats, that will be very fancy. I managed to turn off the robots for the last few places you were in, we just need to make sure we're able to save all the other places before we go for a spin! Work hard, my love, and I will be there with you soon, you just need to pass these tests and I will make you swoon! - Your Dearest Elove"
                   : won && levelId === 3
-                    ? "I'm preparing a great starship, for our amazing love trip! -Love Elove <3"
+                    ? "My dear Wife, I'm preparing a Starship cruise liner for our new life. The robots, I have taken care of them, you just have to clear the rest, no problem! I hope you've been collecting my power ups I've left for you, it's only a small token of my eternal thoughts of you. Come find me, you are almost here, I am filled with glee, we will blast off through the stratosphere! We will be on the moon soon, to begin our precious honey moon! - Your Dearest Elove"
                     : won && levelId === 4
-                      ? "Get on our couple's RoboStarShip and pack - you'll meet me on the moon picking up Moon cheese and snacks! - I love you, Elove <3"
+                      ? "Get on our couple's RoboStarShip and pack, you'll meet me on the Moon picking up Moon cheese and snacks! I hope the bad robots are being cleared away, I know nothing can take you away. The Moon snacks are something else, you will love it after we clean up this mess! I'm ready at the helm, waiting for my love, and we will have a Honey Moon out of this realm! - I love you, Your Dearest Elove <3"
                       : won && levelId === 4.5
-                        ? "I'm waiting for a hug from my favourite girl so we can be snug, and think about all the wonders in space, in each other's embrace. Love you <3 - From Elove"
+                        ? "I'm waiting for a hug from my favourite girl so we can be snug, and think about all the wonders in space, in each other's embrace. We will enjoy our Honey Moon on the Moon, and then we must pack again, because we will be going to Mars, then! Love you <3 - Your Dearest Elove"
                         : won && levelId === 5
-                          ? "We're snug at the helm - blast off to Mars, and I'll always save you. Forever yours, Elove <3"
+                          ? "We're snug at the helm - blast off to Mars, and I'll always save you. Forever yours - Your Dearest Elove"
                           : "";
       }
       hud.endBest.textContent = won && bestMs != null ? `Best ${formatTime(bestMs)}` : "";
@@ -995,7 +1157,15 @@ export const Game = (() => {
       return;
     }
     if (scene && player) {
-      scene.syncFrame(player, enemies, loot, inventory, now, bullets, helpers);
+      scene.syncFrame(
+        player,
+        enemies,
+        loot,
+        inventory,
+        now,
+        bullets,
+        helpers
+      );
     }
   }
 

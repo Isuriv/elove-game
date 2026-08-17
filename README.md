@@ -1,17 +1,27 @@
-# ELOVE GAME
+# ELOVE GAME (Mars Love Blastar)
 
-> **Cross-chat context:** See [`CHAT-HANDOFF.md`](./CHAT-HANDOFF.md) for the current side-scroller state, asset paths, decisions, and how to load this into a new Cursor conversation. Also searchable via MCP `user-rag-context-memory` -> `search_chat_history` ("Mars Love Blastar elove-game").
+Playable **Canvas 2D side-scroller** (synthwave campaign from Ultra Earth through Inside Starship). Native framebuffer **480×270**, integer nearest-neighbor upscale.
 
-Playable **2D Canvas side-scroller** (synthwave / Planet Nars). Native framebuffer **480x270**, integer nearest-neighbor upscale.
+**To assemble, build, and run this snapshot on a clean machine, follow [`ASSEMBLY.md`](./ASSEMBLY.md).** That sheet pins toolchain versions, clone steps, verification, and what is (and is not) required.
 
-## How to run
+## Quick start
 
 ```powershell
-Set-Location "C:\Users\ethra\Documents\Elove\Mars Love Blastar\elove-game"
+Set-Location path\to\elove-game
 python -m http.server 8081
 ```
 
 Open http://localhost:8081/ and hard-refresh (`Ctrl+Shift+R`).
+
+There is nothing to compile. Do not open `index.html` as a `file://` URL. Serve **this directory** (the git root), not the parent folder.
+
+## What you should see
+
+Title screen **ELOVE GAME** with levels:
+
+1 Ultra Earth · 2 Cake Realm · 2.5 Boring Company · 2.5.5 Neuralink · 3 Tesla Works · 4 SpaceX Ascent · 4.5 Moon Bouncing · 5 Inside Starship
+
+Press **Enter** / **J** to start Ultra Earth. All levels are unlocked in this snapshot.
 
 ## Controls
 
@@ -25,71 +35,38 @@ Open http://localhost:8081/ and hard-refresh (`Ctrl+Shift+R`).
 | M | Mute |
 | Enter | Start (title) |
 
-## Objective
+Stay off the **toxic fluid** floor; reach **EXIT**.
 
-Clear drones & cyborgs, stay off the **toxic fluid** floor, reach **EXIT**.
+## Repo notes
 
-For full architecture, art pipeline, and prior chat decisions -> **[CHAT-HANDOFF.md](./CHAT-HANDOFF.md)**.
-
----
-
-## Legacy note
-
-Older README content described a top-down lab-escape demo and/or Three.js blaster. Archives live under `archive/`. Current live game is the side-scroller above.
-
-6. Step on the **green EXIT pad** beyond the door to win
-7. Beat your **localStorage** best time - press **R** to instantly retry
+- **GitHub:** https://github.com/Isuriv/elove-game
+- **Assets:** all runtime art/audio-video used by the current build are in `assets/` (including `assets/imagine/`). Git LFS is not used.
+- **Optional Node scripts** under `scripts/` regenerate or capture art. They need Node + (for some) Playwright / `XAI_API_KEY`. They are **not** required to play.
+- Cross-chat context: [`CHAT-HANDOFF.md`](./CHAT-HANDOFF.md). Credits: [`CREDITS.md`](./CREDITS.md).
 
 ## Project layout
 
 ```
 elove-game/
-  index.html          # canvas host + HTML HUD overlays
+  index.html          # canvas host + HTML HUD
   css/style.css
-  js/config.js        # palette, constants, tile ids
-  js/stubs.js         # Phase 4 API stubs (inactive)
+  js/config.js        # palette, constants, build id
   js/audio.js         # Web Audio SFX + chiptune bed
-  js/world.js         # lab tilemap + collision
-  js/entities.js      # player + cyborg logic
-  js/sprites.js       # procedural HD-pixel sprite baking
-  js/render2d.js      # Canvas 2D scene, camera, markers, VFX
-  js/game.js          # loop, puzzles, score, HUD
-  js/main.js          # entry: input + render loop
-  README.md
+  js/world.js         # collision / tiles
+  js/entities.js      # player + enemies
+  js/sprites.js       # procedural fallback sprites
+  js/assets.js        # loads shipped PNGs / video
+  js/render2d.js      # Canvas 2D scene
+  js/game.js          # loop, pickups, HUD
+  js/main.js          # entry
+  js/levels.js        # campaign catalog
+  js/level-data.js    # per-level layouts
+  assets/             # shipped game assets
+  ASSEMBLY.md         # full recreate-from-scratch instructions
 ```
 
-## Tech notes
+## Tech
 
-- **Vanilla Canvas 2D** (no p5.js / Three.js on the playable path)
-- Procedural **HD-pixel** sprites (nearest-neighbor, detailed cat-girl / cyborgs / lab tiles)
-- Pixel-perfect camera follow with integer scroll
-- Open top-down lab (no roofs / tunnels hiding the player)
-- HTML/CSS HUD for timer, inventory, objectives, console, and end screens
+- Vanilla **Canvas 2D** (no p5.js / Three.js on the playable path)
+- ES modules in the browser; Python `http.server` for local play
 - Palette: pink / cyan / purple / gold
-
-## Implemented vs stubbed
-
-**Implemented**
-
-- 2D lab (walls, floors, pod, closet, console, door, exit pad)
-- Procedural HD-pixel cat-girl player and cyborg enemies
-- Movement + follow camera
-- Slash combat + sword power-up + force-warp
-- Timed eye-key puzzle + door unlock
-- Cryptic console + hidden button
-- Escape win / death, run timer, **R** restart, high-score via `localStorage`
-- Objective hints + glowing markers
-- Web Audio SFX + looping bed
-
-**Stubbed / deferred (Phase 4+)**
-
-- Infection / item sabotage
-- God/AI sabotage hooks
-- Dimensional shift
-- Summon assist / OP mode
-- Partner-cat 2P, multiplanet progression
-
-## Notion sources
-
-- Plan: https://app.notion.com/p/399c98a9f7ff810585f8d820c1ef51f6
-- Spec (game data reference): https://app.notion.com/p/218c98a9f7ff80939736cdb22ce9343d

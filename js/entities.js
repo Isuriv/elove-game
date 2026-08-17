@@ -1,8 +1,8 @@
 /* Side-scroller entities: cat-rocket player, ground cyborgs, flying drones */
-import { CFG, TILE, frameScale } from "./config.js?v=coding-fixes-20260811f";
-import { World } from "./world.js";
+import { CFG, TILE, frameScale } from "./config.js?v=play-freeze-20260815";
+import { World } from "./world.js?v=play-freeze-20260815";
 import { AudioFX } from "./audio.js";
-import { Art } from "./assets.js?v=coding-fixes-20260811f";
+import { Art } from "./assets.js?v=play-freeze-20260815";
 import { tickAnim } from "./anim.js";
 
 const HW = 8;
@@ -28,7 +28,7 @@ function blend(factor, s) {
 
 function advance(entity, animKey, anims, holds, dt) {
   const list = anims?.[animKey] || [];
-  tickAnim(entity.anim, animKey, list.length || 1, dt, holds, Art.animDefaults);
+  tickAnim(entity.anim, animKey, list.length || 1, dt, holds, Art.animDefaults || undefined);
   entity.frame = entity.anim.index;
 }
 

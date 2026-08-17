@@ -5,7 +5,8 @@
  *   node scripts/grok-imagine-cake-bg.mjs
  *
  * Writes: assets/imagine/cake/{cake-sky-far,cake-mountains,cake-midscape,cake-cloud,cake-fg-accent,
- *         pastry-cupcake,pastry-macaron,pastry-croissant,pastry-donut,pastry-slice}.png
+ *         pastry-cupcake,pastry-macaron,pastry-croissant,pastry-donut,pastry-slice,
+ *         candy-lollipop,candy-cane,candy-gumdrop,candy-wrapped-chocolate,candy-jelly-bean,candy-hard}.png
  */
 import fs from "fs/promises";
 import path from "path";
@@ -123,6 +124,66 @@ const ITEMS = [
     prompt: [
       "Isolated chunky pixel art cake slice sprite, solid pure black background #000000,",
       "cream and strawberry layers, magenta frosting drip, gold cherry,",
+      "clean silhouette, no characters, no text,",
+      PALETTE,
+    ].join(" "),
+  },
+  {
+    file: "candy-lollipop.png",
+    aspect_ratio: "1:1",
+    prompt: [
+      "Isolated chunky pixel art lollipop candy collectible sprite, solid pure black background #000000,",
+      "pink cream swirl disc on stick, cyan sugar sparkles, thick black outline,",
+      "clean silhouette for small game pickup, no characters, no text,",
+      PALETTE,
+    ].join(" "),
+  },
+  {
+    file: "candy-cane.png",
+    aspect_ratio: "1:1",
+    prompt: [
+      "Isolated chunky pixel art mini candy cane collectible sprite, solid pure black background #000000,",
+      "pink and cream striped crook cane, cyan sparkles, thick black outline,",
+      "clean silhouette, no characters, no text,",
+      PALETTE,
+    ].join(" "),
+  },
+  {
+    file: "candy-gumdrop.png",
+    aspect_ratio: "1:1",
+    prompt: [
+      "Isolated chunky pixel art gumdrop candy collectible sprite, solid pure black background #000000,",
+      "plump magenta sugar-dusted gumdrop, cyan sparkles, thick black outline,",
+      "clean silhouette, no characters, no text,",
+      PALETTE,
+    ].join(" "),
+  },
+  {
+    file: "candy-wrapped-chocolate.png",
+    aspect_ratio: "1:1",
+    prompt: [
+      "Isolated chunky pixel art wrapped chocolate candy collectible sprite, solid pure black background #000000,",
+      "caramel center with pink gold twisted wrapper ends, cyan sparkles, thick black outline,",
+      "clean silhouette, no characters, no text,",
+      PALETTE,
+    ].join(" "),
+  },
+  {
+    file: "candy-jelly-bean.png",
+    aspect_ratio: "1:1",
+    prompt: [
+      "Isolated chunky pixel art jelly bean candy collectible sprite, solid pure black background #000000,",
+      "glossy cyan oval jelly bean with pink tip and white shine, thick black outline,",
+      "clean silhouette, no characters, no text,",
+      PALETTE,
+    ].join(" "),
+  },
+  {
+    file: "candy-hard.png",
+    aspect_ratio: "1:1",
+    prompt: [
+      "Isolated chunky pixel art hard candy collectible sprite, solid pure black background #000000,",
+      "pink translucent disc with cream twisted wrapper ends, cyan sparkles, thick black outline,",
       "clean silhouette, no characters, no text,",
       PALETTE,
     ].join(" "),
