@@ -234,11 +234,11 @@ a { color: inherit; }
 .offering:hover .offering-title,
 .offering:focus-visible .offering-title { color: var(--amber); }
 
-.page { padding: 0.5rem 4vw 2rem; }
+.page { padding: 0.2rem 4vw 1.5rem; }
 
 .page.narrow { max-width: 40rem; padding-top: 2rem; }
 
-.page-intro { max-width: 44rem; margin-bottom: 0.8rem; }
+.page-intro { max-width: 44rem; margin-bottom: 0.45rem; }
 
 .page-intro h1,
 .story-column h1,
@@ -250,7 +250,7 @@ a { color: inherit; }
 }
 
 .rules {
-  margin: 0 0 1rem;
+  margin: 0 0 0.55rem;
   max-width: 46rem;
   color: var(--ink-dim);
   font-family: var(--prose);
@@ -292,9 +292,9 @@ a { color: inherit; }
   font-size: 0.95rem;
 }
 
-.holdings { margin: 0.25rem 0 0.6rem; }
+.holdings { margin: 0.2rem 0 0.35rem; }
 
-.map-wrap { max-width: 640px; }
+.map-wrap { max-width: 520px; }
 
 .map {
   position: relative;
@@ -311,13 +311,19 @@ a { color: inherit; }
 
 .map-svg path {
   fill: none;
-  stroke: rgba(243, 236, 223, 0.28);
-  stroke-width: 0.35;
+  stroke: rgba(243, 236, 223, 0.42);
+  stroke-width: 0.5;
 }
 
 .map-lens {
-  fill: rgba(228, 161, 90, 0.04);
-  stroke: rgba(228, 161, 90, 0.35);
+  fill: rgba(228, 161, 90, 0.08);
+  stroke: rgba(228, 161, 90, 0.62);
+  stroke-width: 0.45;
+}
+
+.map-lens-outer {
+  fill: none;
+  stroke: rgba(179, 160, 230, 0.4);
   stroke-width: 0.35;
 }
 
@@ -457,6 +463,8 @@ a { color: inherit; }
   background: var(--panel);
   padding: 1rem 1.05rem 1.1rem;
   box-shadow: var(--shadow);
+  position: sticky;
+  top: 0.75rem;
 }
 
 .mind h2 {

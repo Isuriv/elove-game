@@ -18,7 +18,8 @@ export function Board({ board, phase, selection, counsel, onSelect }: BoardProps
     <div className="map-wrap">
       <div className="map" role="group" aria-label="Sector map">
         <svg className="map-svg" viewBox="0 0 100 100" aria-hidden="true">
-          <ellipse className="map-lens" cx="50" cy="48" rx="18" ry="12" />
+          <ellipse className="map-lens-outer" cx="50" cy="48" rx="28" ry="20" />
+          <ellipse className="map-lens" cx="50" cy="48" rx="16" ry="11" />
           {EDGES.map(([from, to]) => {
             const start = REGIONS[from];
             const end = REGIONS[to];

@@ -229,15 +229,15 @@ function applyAttack(
   const left = source.fleets - fleets;
   next[source.id] = left === 0 ? { id: source.id, owner: "neutral", fleets: 0 } : { ...source, fleets: left };
   const margin = fleets - target.fleets;
-  const from = regionTitle(source.id);
-  const to = regionTitle(target.id);
+  const subject = regionTitle(source.id);
+  const object = regionSentence(target.id);
 
   if (margin > 0) {
     next[target.id] = { id: target.id, owner: side, fleets: margin };
     return {
       board: next,
       ok: true,
-      line: `${from} sends ${fleets} against ${to} (${target.fleets}). ${actorName(side)} ${verb(side, "take", "takes")} it with ${margin}.`,
+      line: `${subject} sends ${fleets} against ${object} (${target.fleets}). ${actorName(side)} ${verb(side, "take", "takes")} it with ${margin}.`,
     };
   }
   if (margin === 0) {
@@ -245,7 +245,7 @@ function applyAttack(
     return {
       board: next,
       ok: true,
-      line: `Equal strength at ${to}. The assault and the garrison both clear.`,
+      line: `Equal strength at ${object}. The assault and the garrison both clear.`,
     };
   }
   const defenderLeft = target.fleets - fleets;
@@ -253,7 +253,7 @@ function applyAttack(
   return {
     board: next,
     ok: true,
-    line: `${from} sends ${fleets} against ${to} (${target.fleets}). The assault fails. ${to} keeps ${defenderLeft}.`,
+    line: `${subject} sends ${fleets} against ${object} (${target.fleets}). The assault fails. ${regionTitle(target.id)} keeps ${defenderLeft}.`,
   };
 }
 
