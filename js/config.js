@@ -1,7 +1,7 @@
 /* ELOVE GAME - side-scroller config */
 
 /** Bump when shipping runtime JS changes (keep in sync with index.html / import ?v=). */
-export const BUILD = "rainbow-bolts-20260816b";
+export const BUILD = "deploy-assets-20261111";
 
 export const CFG = {
   /**
@@ -57,8 +57,8 @@ export const CFG = {
   GUN_FIRE_INTERVAL: 100,
   GUN_BULLET_SPEED: 5.2,
   GUN_BULLET_RANGE: 220,
-  /** Extra pink guns on the first gun pickup of a run (scattered loot has noScatter). */
-  GUN_SCATTER_COUNT: 10,
+  /** Extra pink guns on pickup. 0 = only the two BASE_LOOT guns per level. */
+  GUN_SCATTER_COUNT: 0,
   RAINBOW_BULLET_COLORS: [
     "#ff004d",
     "#ff5a00",

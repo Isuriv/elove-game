@@ -1,5 +1,5 @@
 /* Procedural HD-pixel sprites - nearest-neighbor friendly */
-import { CFG } from "./config.js?v=play-freeze-20260815";
+import { CFG } from "./config.js?v=deploy-assets-20261111";
 
 const C = CFG.COLORS;
 

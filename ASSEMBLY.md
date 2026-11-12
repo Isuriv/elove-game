@@ -15,7 +15,7 @@ The short overview lives in [`README.md`](./README.md).
 | Playable entry | `index.html` → ES module `js/main.js` |
 | Runtime | Browser Canvas 2D + Web Audio |
 | Native framebuffer | **480×270**, integer nearest-neighbor CSS upscale (cap **×3** → 1440×810) |
-| Current build id | `rainbow-bolts-20260816b` (`js/config.js` `CFG` / `BUILD`, cache-bust on `index.html`) |
+| Current build id | `deploy-assets-20261111` (`js/config.js` `BUILD`, cache-bust on `index.html`) |
 | Default boot | Title screen, **Level 1 Ultra Earth** selected (`Game.start({ levelId: 1 })`) |
 | GitHub | https://github.com/Isuriv/elove-game (this directory **is** the git root) |
 
@@ -99,9 +99,10 @@ git clone https://github.com/Isuriv/elove-game.git
 Set-Location elove-game
 ```
 
-- **Do not** enable Git LFS for this repo; pointers are not used.
+- **Do not** enable Git LFS for this repo; pointers are not used. `.gitattributes` marks images and video as binary so a Windows checkout does not rewrite them.
 - **No submodules** (`.gitmodules` is absent).
 - Clone **this repo root**, not the parent `Mars Love Blastar` folder. Parent-folder dumps (Unity installer, Godot zip, unused Photoshop/source packs) are **not** part of the playable game.
+- After a GitHub **Download ZIP**, unzip it, then run `play.bat` (Windows) or `./play.sh`. Opening `index.html` from the desktop makes every asset request fail.
 
 Confirm assets arrived (expect hundreds of PNGs plus MP4s):
 
@@ -114,7 +115,9 @@ Get-ChildItem assets\imagine\starship\movie\*.mp4
 
 ## 5. Assemble / build / run from a clean machine
 
-There is nothing to compile. The “build” is: clone → serve this directory → open the URL.
+There is nothing to compile. The “build” is: clone → run `play.bat` / `./play.sh`, or serve this directory → open the URL.
+
+To publish the same tree on GitHub Pages, push `master`. `.github/workflows/pages.yml` uploads `index.html`, `gallery.html`, `css/`, `js/`, and `assets/` (with `.nojekyll`). Enable Pages with **Source: GitHub Actions**. A private repo can only do that on GitHub Pro; a public repo can do it on the free plan. The page URL is `https://isuriv.github.io/elove-game/`.
 
 ### Windows (PowerShell) — matches current working setup
 

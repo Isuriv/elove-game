@@ -129,7 +129,6 @@ export const BASE_LOOT = [
   { type: "magnet", x: 34, yTile: 8 },
   { type: "gun-pistol", x: 28, yTile: 8 },
   { type: "gun-blaster", x: 50, yTile: 7 },
-  { type: "gun-cannon", x: 70, yTile: 8 },
 ];
 
 /** Extra themed collectibles per level (tile coords). */

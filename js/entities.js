@@ -1,8 +1,8 @@
 /* Side-scroller entities: cat-rocket player, ground cyborgs, flying drones */
-import { CFG, TILE, frameScale } from "./config.js?v=play-freeze-20260815";
-import { World } from "./world.js?v=play-freeze-20260815";
+import { CFG, TILE, frameScale } from "./config.js?v=deploy-assets-20261111";
+import { World } from "./world.js?v=deploy-assets-20261111";
 import { AudioFX } from "./audio.js";
-import { Art } from "./assets.js?v=play-freeze-20260815";
+import { Art } from "./assets.js?v=deploy-assets-20261111";
 import { tickAnim } from "./anim.js";
 
 const HW = 8;

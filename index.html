@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ELOVE GAME - Side Scroller</title>
-  <link rel="stylesheet" href="css/style.css?v=holo-notes-20260816c" />
+  <link rel="stylesheet" href="css/style.css?v=deploy-assets-20261111" />
   <link rel="preload" as="image" href="assets/game/nars-landscape.jpg" />
 </head>
 <body>
@@ -143,6 +143,17 @@
     </aside>
   </div>
 
-  <script type="module" src="js/main.js?v=rainbow-bolts-20260816b"></script>
+  <script>
+    if (location.protocol === "file:") {
+      document.addEventListener("DOMContentLoaded", () => {
+        const banner = document.createElement("div");
+        banner.setAttribute("role", "alert");
+        banner.style.cssText = "position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:24px;background:#120818;color:#ffe6f4;font:16px/1.45 system-ui,sans-serif;text-align:center";
+        banner.innerHTML = "<div style=\"max-width:540px\"><h2 style=\"margin:0 0 8px;color:#ff4fa3\">Art cannot load from this file</h2><p>Opening <code>index.html</code> directly blocks the game scripts and pictures, so the assets never appear. Close this tab, double-click <strong>play.bat</strong> in this folder, then use <strong>http://localhost:8081/</strong>.</p></div>";
+        document.body.appendChild(banner);
+      });
+    }
+  </script>
+  <script type="module" src="js/main.js?v=deploy-assets-20261111"></script>
 </body>
 </html>

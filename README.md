@@ -6,14 +6,27 @@ Playable **Canvas 2D side-scroller** (synthwave campaign from Ultra Earth throug
 
 ## Quick start
 
+Download or clone **this** repository (`elove-game`), not a parent folder.
+
+**Windows:** double-click `play.bat`.  
+**macOS / Linux:** `chmod +x play.sh && ./play.sh`.
+
+That starts a local site at http://localhost:8081/ and opens it. Do **not** double-click `index.html`. A `file://` page blocks the scripts, so the pictures never load and the game looks empty.
+
+Manual serve, from this directory:
+
 ```powershell
 Set-Location path\to\elove-game
 python -m http.server 8081
 ```
 
-Open http://localhost:8081/ and hard-refresh (`Ctrl+Shift+R`).
+Hard-refresh once (`Ctrl+Shift+R`). `npm install` is not required to play.
 
-There is nothing to compile. Do not open `index.html` as a `file://` URL. Serve **this directory** (the git root), not the parent folder.
+## Play it on the web
+
+GitHub Pages publishes the game on every push to `master` (workflow `.github/workflows/pages.yml`). The site is the HTML, CSS, JS, and `assets/` tree only. `.nojekyll` is included so GitHub does not run Jekyll, which otherwise drops or fails the art files.
+
+The live URL is `https://isuriv.github.io/elove-game/` after Pages is enabled. This repository is private: GitHub Pages on a private repo needs GitHub Pro, or the repo has to be public. Art stays in git (no Git LFS), so a normal clone already contains the PNGs and MP4s.
 
 ## What you should see
 

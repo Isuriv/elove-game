@@ -1,7 +1,7 @@
 /* Side-scroller canvas renderer - 480x270 native resolution */
-import { CFG, TILE, isPlatformTile } from "./config.js?v=rainbow-bolts-20260816b";
-import { World } from "./world.js?v=play-freeze-20260815";
-import { Art, bakeHardOutline, SPRITE_OUTLINE_COLOR, PLAYER_TARGET_H } from "./assets.js?v=play-freeze-20260815";
+import { CFG, TILE, isPlatformTile } from "./config.js?v=deploy-assets-20261111";
+import { World } from "./world.js?v=deploy-assets-20261111";
+import { Art, bakeHardOutline, SPRITE_OUTLINE_COLOR, PLAYER_TARGET_H } from "./assets.js?v=deploy-assets-20261111";
 import { frameAt } from "./anim.js";
 import { makeTiles, makeLootSprites, makeMarkerGlow } from "./sprites.js";
 

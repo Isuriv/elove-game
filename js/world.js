@@ -1,5 +1,5 @@
 /* Side-scroller platform map + collision */
-import { CFG, TILE, isPlatformTile } from "./config.js?v=play-freeze-20260815";
+import { CFG, TILE, isPlatformTile } from "./config.js?v=deploy-assets-20261111";
 
 export const World = (() => {
   const W = 96;
@@ -196,9 +196,10 @@ export const World = (() => {
   }
 
   function exitRect() {
+    // Matches TILE.EXIT at (W-5, H-3) and (W-4, H-3) — the floor pad the player stands in.
     return {
       x: (W - 5) * CFG.TILE,
-      y: (H - 4) * CFG.TILE,
+      y: (H - 3) * CFG.TILE,
       w: 2 * CFG.TILE,
       h: CFG.TILE,
     };

@@ -1,8 +1,8 @@
 /* Side-scroller combat run - clear drones, cyborgs, Optimus, reach exit */
-import { CFG, frameScale } from "./config.js?v=rainbow-bolts-20260816b";
-import { World } from "./world.js?v=play-freeze-20260815";
-import { Art } from "./assets.js?v=play-freeze-20260815";
-import { Player, Cyborg, Drone, Optimus, Carbot, RocketBoss } from "./entities.js?v=play-freeze-20260815";
+import { CFG, TILE, frameScale } from "./config.js?v=deploy-assets-20261111";
+import { World } from "./world.js?v=deploy-assets-20261111";
+import { Art } from "./assets.js?v=deploy-assets-20261111";
+import { Player, Cyborg, Drone, Optimus, Carbot, RocketBoss } from "./entities.js?v=deploy-assets-20261111";
 import { AudioFX } from "./audio.js";
 import {
   LEVELS,
@@ -11,14 +11,14 @@ import {
   unlockLevel,
   getLevelPhysics,
   BASE_PHYSICS,
-} from "./levels.js?v=play-freeze-20260815";
+} from "./levels.js?v=deploy-assets-20261111";
 import {
   LEVEL_ENEMY_SPAWNS,
   BASE_LOOT,
   LEVEL_EXTRA_LOOT,
   CANDY_KINDS,
   getProgression,
-} from "./level-data.js?v=play-freeze-20260815";
+} from "./level-data.js?v=deploy-assets-20261111";
 
 export const Game = (() => {
   const STATE = {
@@ -405,6 +405,36 @@ export const Game = (() => {
     return enemies.filter((e) => e.alive).length;
   }
 
+  /** True when the player body overlaps the EXIT pad (AABB + EXIT tiles under feet). */
+  function playerHitsExit(p) {
+    if (!p) return false;
+    const er = World.exitRect();
+    const hw = 8;
+    const hh = 10;
+    const overlapsPad =
+      p.x + hw > er.x &&
+      p.x - hw < er.x + er.w &&
+      p.y + hh > er.y &&
+      p.y - hh < er.y + er.h;
+    if (overlapsPad) return true;
+    const feetY = p.y + hh;
+    const samples = [p.x, p.x - hw, p.x + hw];
+    for (const sx of samples) {
+      const { tx, ty } = World.worldToTile(sx, feetY);
+      if (World.get(tx, ty) === TILE.EXIT) return true;
+      const body = World.worldToTile(sx, p.y);
+      if (World.get(body.tx, body.ty) === TILE.EXIT) return true;
+    }
+    return false;
+  }
+
+  function canAdvanceFromWin() {
+    if (mode !== STATE.WIN) return false;
+    if (pendingAdvance) return true;
+    const prog = getProgression(levelId);
+    return prog != null && prog.unlock != null;
+  }
+
   function applyPickup(item, now) {
     item.taken = true;
     if (item.type === "sword") {
@@ -429,7 +459,8 @@ export const Game = (() => {
       inventory.gunType = item.type;
       inventory.gunFireUntil = now + CFG.GUN_FIRE_MS;
       inventory.gunNextShot = now;
-      const firstScatter = !item.noScatter && !inventory.gunScattered;
+      const scatterWanted = (CFG.GUN_SCATTER_COUNT || 0) > 0;
+      const firstScatter = scatterWanted && !item.noScatter && !inventory.gunScattered;
       if (firstScatter) {
         inventory.gunScattered = true;
         pendingGunScatter = true;
@@ -454,13 +485,22 @@ export const Game = (() => {
       item.type === "engineering"
     ) {
       inventory.collects = (inventory.collects || 0) + 1;
+      let clueHealed = false;
       if (item.type === "clue") {
-        player.maxHp += 1;
-        player.hp += 1;
+        const cap = CFG.PLAYER_HP;
+        player.maxHp = Math.min(cap, player.maxHp || cap);
+        if (player.hp < player.maxHp) {
+          player.hp += 1;
+          clueHealed = true;
+        } else {
+          player.hp = player.maxHp;
+        }
       }
       const label =
         item.type === "clue"
-          ? "Love note from Elove - +1 HP"
+          ? clueHealed
+            ? "Love note from Elove - +1 HP"
+            : "Love note from Elove"
           : item.type === "candy"
             ? "Candy"
             : item.type === "toy"
@@ -687,7 +727,7 @@ export const Game = (() => {
     if (!player || !player.alive || mode !== STATE.PLAY) return;
     for (const item of loot) {
       if (item.taken) continue;
-      if (near(player.x, player.y, item.x, item.y, 21)) {
+      if (near(player.x, player.y, item.x, item.y, 26)) {
         applyPickup(item, now);
         return;
       }
@@ -719,7 +759,7 @@ export const Game = (() => {
 
       for (const item of loot) {
         if (item.taken) continue;
-        const reach = inventory.magnetUntil > now ? 28 : 12;
+        const reach = inventory.magnetUntil > now ? 36 : 20;
         if (near(player.x, player.y, item.x, item.y, reach)) {
           applyPickup(item, now);
         } else if (inventory.magnetUntil > now) {
@@ -748,14 +788,7 @@ export const Game = (() => {
         showToast("Sector clear - race to the EXIT pad!");
       }
 
-      const er = World.exitRect();
-      if (
-        inventory.cleared &&
-        player.x > er.x &&
-        player.x < er.x + er.w &&
-        player.y > er.y - 20 &&
-        player.y < er.y + er.h + 20
-      ) {
+      if (inventory.cleared && playerHitsExit(player)) {
         mode = STATE.WIN;
         player.state = "success";
         const record = saveBest(runTime);
@@ -852,7 +885,7 @@ export const Game = (() => {
   }
 
   function tryAdvanceOrStart() {
-    if (mode === STATE.WIN && pendingAdvance) {
+    if (canAdvanceFromWin()) {
       const prog = getProgression(levelId);
       if (prog?.unlock != null) {
         selectLevel(prog.unlock);
@@ -904,7 +937,7 @@ export const Game = (() => {
       return false;
     }
     if (code === "Space" || code === "KeyW" || code === "ArrowUp") {
-      if (mode === STATE.TITLE || (mode === STATE.WIN && pendingAdvance)) {
+      if (mode === STATE.TITLE || canAdvanceFromWin()) {
         tryAdvanceOrStart();
         return false;
       }
@@ -920,7 +953,7 @@ export const Game = (() => {
       showToast(m ? "Muted" : "SFX on");
     }
     if (code === "Enter") {
-      if (mode === STATE.TITLE || (mode === STATE.WIN && pendingAdvance)) {
+      if (mode === STATE.TITLE || canAdvanceFromWin()) {
         tryAdvanceOrStart();
       }
     }
@@ -1121,7 +1154,7 @@ export const Game = (() => {
                       : won && levelId === 4.5
                         ? "I'm waiting for a hug from my favourite girl so we can be snug, and think about all the wonders in space, in each other's embrace. We will enjoy our Honey Moon on the Moon, and then we must pack again, because we will be going to Mars, then! Love you <3 - Your Dearest Elove"
                         : won && levelId === 5
-                          ? "We're snug at the helm - blast off to Mars, and I'll always save you. Forever yours - Your Dearest Elove"
+                          ? "We're snug at the helm, with a hug to let our love delve, into the deepest affection, basically our obsessive affliction! Let's enjoy our previous time together, and learn more about each other, and enjoy the world and our love, like none other! Thank you for coming with me, we saved the world, you'll see, and I get to hang out with my ultimate love, from the Earth, to the Moon, Mars and even more above!!! - Your Ultimate Dearest Elove <3"
                           : "";
       }
       hud.endBest.textContent = won && bestMs != null ? `Best ${formatTime(bestMs)}` : "";
@@ -1143,7 +1176,7 @@ export const Game = (() => {
                         ? "Inside Starship"
                         : null;
         hud.endHint.innerHTML =
-          won && pendingAdvance && nextHint
+          won && canAdvanceFromWin() && nextHint
             ? `Press <kbd>Enter</kbd> for ${nextHint} - <kbd>R</kbd> retry`
             : `Press <kbd>R</kbd> to run again`;
       }

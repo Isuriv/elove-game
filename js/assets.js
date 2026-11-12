@@ -1343,7 +1343,7 @@ function coolMoonPlate(img) {
 }
 
 export async function preloadArt() {
-  const { bakeNeonSet } = await import("./neon.js?v=play-freeze-20260815");
+  const { bakeNeonSet } = await import("./neon.js?v=deploy-assets-20261111");
 
   const propPaths = [];
   for (let i = 1; i <= 34; i++) {
@@ -1400,30 +1400,30 @@ export async function preloadArt() {
     loadOptional(assetUrl(`${IMAGINE}/sheets/enemy-drone.png`)),
     loadOptional(assetUrl(`${IMAGINE}/sheets/enemy-cyborg.png`)),
     loadOptional(assetUrl(`${IMAGINE}/sheets/pickup-blade.png`)),
-    loadImage("assets/ref-bg/cyber-sunset-env.png"),
-    loadImage("assets/ref-bg/cyber-night-env.png"),
-    loadImage("assets/ref-bg/cyber-train-env.png"),
-    loadImage(`${PW}/bg-sky.png`),
-    loadImage(`${PW}/bg-sunset.png`),
-    loadImage(`${PW}/bg-space.png`),
-    loadImage(`${PW}/bg-city.png`),
-    loadImage(`${PW}/bg-clouds.png`),
-    loadImage(`${PW}/bg-entry1.png`),
-    loadImage(`${PW}/bg-entry2.png`),
-    loadImage(`${PW}/bg-entry3.png`),
-    loadImage(`${PW}/bg-wall.png`),
-    loadImage(`${PW}/bg-stone.png`),
-    loadImage(`${PW}/bg-topcity.png`),
+    loadOptional("assets/ref-bg/cyber-sunset-env.png"),
+    loadOptional("assets/ref-bg/cyber-night-env.png"),
+    loadOptional("assets/ref-bg/cyber-train-env.png"),
+    loadOptional(`${PW}/bg-sky.png`),
+    loadOptional(`${PW}/bg-sunset.png`),
+    loadOptional(`${PW}/bg-space.png`),
+    loadOptional(`${PW}/bg-city.png`),
+    loadOptional(`${PW}/bg-clouds.png`),
+    loadOptional(`${PW}/bg-entry1.png`),
+    loadOptional(`${PW}/bg-entry2.png`),
+    loadOptional(`${PW}/bg-entry3.png`),
+    loadOptional(`${PW}/bg-wall.png`),
+    loadOptional(`${PW}/bg-stone.png`),
+    loadOptional(`${PW}/bg-topcity.png`),
     loadOptional(`${PW}/piskel.png`),
-    loadImage(`${PW}/cyber-city.png`),
-    loadImage(`${PW}/cyber-city2.png`),
-    loadImage(`${PW}/fire-planet.png`),
-    loadImage(`${PW}/ice-planet.png`),
-    loadImage(`${PW}/tile-purple.png`),
-    loadImage(`${PW}/tile-cyan.png`),
-    loadImage(`${PW}/tile-metal.png`),
-    loadImage(`${PW}/tileset.png`),
-    loadImage(`${PW}/ui-frame.png`),
+    loadOptional(`${PW}/cyber-city.png`),
+    loadOptional(`${PW}/cyber-city2.png`),
+    loadOptional(`${PW}/fire-planet.png`),
+    loadOptional(`${PW}/ice-planet.png`),
+    loadOptional(`${PW}/tile-purple.png`),
+    loadOptional(`${PW}/tile-cyan.png`),
+    loadOptional(`${PW}/tile-metal.png`),
+    loadOptional(`${PW}/tileset.png`),
+    loadOptional(`${PW}/ui-frame.png`),
     loadOptional(`${PW}/ui-panel.png`),
     ...propPaths.map(loadOptional),
   ]);
@@ -2316,10 +2316,12 @@ export async function preloadArt() {
   Art.tilePlat = Art.neon.platform;
   Art.tilePlatSlip = Art.neon.platformSlip || Art.neon.platform;
   Art.tilePlatBounce = Art.neon.platformBounce || Art.neon.platform;
-  Art.tileMetal = scaleTo(punchBlack(tileMetal, 12), TILE_TARGET, TILE_TARGET);
+  Art.tileMetal = tileMetal
+    ? scaleTo(punchBlack(tileMetal, 12), TILE_TARGET, TILE_TARGET)
+    : Art.neon.ground;
   Art.tileset = tileset;
 
-  Art.uiFrame = punchBlack(uiFrame, 8);
+  Art.uiFrame = uiFrame ? punchBlack(uiFrame, 8) : null;
   Art.uiPanel = uiPanel ? punchBlack(uiPanel, 8) : null;
 
   Art.cables = Art.neon.cables || [];

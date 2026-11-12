@@ -1,9 +1,9 @@
 /* ELOVE GAME - 2D canvas entry */
 import { AudioFX } from "./audio.js";
-import { Game } from "./game.js?v=rainbow-bolts-20260816b";
-import { Scene2D } from "./render2d.js?v=rainbow-bolts-20260816b";
-import { preloadArt } from "./assets.js?v=play-freeze-20260815";
-import { isDebugMode, unlockAllLevels } from "./levels.js?v=play-freeze-20260815";
+import { Game } from "./game.js?v=deploy-assets-20261111";
+import { Scene2D } from "./render2d.js?v=deploy-assets-20261111";
+import { preloadArt } from "./assets.js?v=deploy-assets-20261111";
+import { isDebugMode, unlockAllLevels } from "./levels.js?v=deploy-assets-20261111";
 
 const wrap = document.getElementById("game-wrap");
 

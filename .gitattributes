@@ -1,0 +1,14 @@
+# Keep shipped art byte-for-byte on Windows clones (no CRLF rewrite).
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.mp4 binary
+*.webm binary
+*.mp3 binary
+*.wav binary
+*.ogg binary
+*.glb binary
+*.gltf binary
+*.bin binary
